@@ -16,6 +16,7 @@
     "axios": "^0.18.0",
     "js-cookie": "^2.2.0",
     "lodash": "^4.17.5",
+    "paraview-glance": "^1.1.20",
     "qs": "^6.5.1",
     "vue": "^2.5.13",
     "vue-router": "^3.0.1",
