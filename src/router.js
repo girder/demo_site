@@ -3,6 +3,7 @@ import Router from 'vue-router';
 import CT from '@/views/CT';
 import CTTerms from '@/views/CTTerms';
 import FrontPage from '@/views/FrontPage';
+import Stroke from '@/views/Stroke';
 
 Vue.use(Router);
 
@@ -16,5 +17,8 @@ export default new Router({
   }, {
     path: '/ct_terms',
     component: CTTerms,
+  }, {
+    path: '/stroke',
+    component: Stroke,
   }],
 });
