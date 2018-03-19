@@ -5,6 +5,7 @@ from girder.api.rest import Resource, filtermodel
 from girder.constants import AccessType
 from girder.models.collection import Collection
 from girder.models.folder import Folder
+from girder.models.item import Item
 from girder.models.setting import Setting
 from girder.utility import setting_utilities
 from girder.utility.server import staticFile
@@ -30,9 +31,9 @@ class Study(Resource):
         .pagingParams(defaultSort='studyId')
     )
     def listStudies(self, limit, offset, sort):
-        studies = Folder().find({'studyId': {'$exists': True}}, sort=sort)
+        cursor = Folder().find({'studyId': {'$exists': True}}, sort=sort)
         return list(Folder().filterResultsByPermission(
-            studies, level=AccessType.READ, user=self.getCurrentUser()))
+            cursor, level=AccessType.READ, user=self.getCurrentUser(), limit=limit, offset=offset))
 
     @access.user
     @filtermodel(Folder)
@@ -65,19 +66,26 @@ class Series(Resource):
         super(Resource, self).__init__()
         self.resourceName = 'series'
 
-        self.route('GET', (), self.listSeries)
+        self.route('POST', (), self.createSeries)
 
-    @access.public
-    @filtermodel(Folder)
+    @access.user
+    @filtermodel(Item)
     @autoDescribeRoute(
-        Description('List series in a study.')
-        .pagingParams(defaultSort='name')
+        Description('Create a new series.')
+        .modelParam('studyId', 'The parent study.', model=Folder, level=AccessType.WRITE,
+                    paramType='query')
+        .param('name', 'The name of the series.')
+        .param('preset', 'Volume rendering preset to use.', required=False)
     )
-    def listSeries(self, limit, offset, sort):
-        # TODO implement
-        studies = Folder().find({'studyId': {'$exists': True}}, sort=sort)
-        return list(Folder().filterResultsByPermission(
-            studies, level=AccessType.READ, user=self.getCurrentUser()))
+    def createSeries(self, study, name):
+        series = Item().createItem(name, creator=self.getCurrentUser(), folder=study)
+        Folder().update({
+            '_id': study['_id']
+        }, {
+            'nSeries': {'$increment': 1}
+        }, multi=False)
+
+        return series
 
 
 @setting_utilities.validator(PluginSettings.STUDIES_COLL_ID)
@@ -97,3 +105,5 @@ def load(info):
     Folder().ensureIndex('studyId')
     Folder().exposeFields(level=AccessType.READ, fields={
         'isStudy', 'nSeries', 'studyDate', 'studyId'})
+
+    # TODO hook into item deletion and decrement nSeries of parent study
