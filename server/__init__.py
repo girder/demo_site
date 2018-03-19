@@ -1,4 +1,5 @@
 import os
+from girder import events
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute
 from girder.api.rest import Resource, filtermodel
@@ -79,6 +80,9 @@ class Series(Resource):
     )
     def createSeries(self, study, name):
         series = Item().createItem(name, creator=self.getCurrentUser(), folder=study)
+        series['isSeries'] = True
+        series = Item().save(series)
+
         Folder().update({
             '_id': study['_id']
         }, {
@@ -86,6 +90,16 @@ class Series(Resource):
         }, multi=False)
 
         return series
+
+
+def _itemDeleted(event):
+    item = event.info
+    if item.get('isSeries') is True:
+        Folder().update({
+            '_id': item['folderId']
+        }, {
+            'nSeries': {'$increment': -1}
+        }, multi=False)
 
 
 @setting_utilities.validator(PluginSettings.STUDIES_COLL_ID)
@@ -105,5 +119,6 @@ def load(info):
     Folder().ensureIndex('studyId')
     Folder().exposeFields(level=AccessType.READ, fields={
         'isStudy', 'nSeries', 'studyDate', 'studyId'})
+    Item().exposeFields(level=AccessType.READ, fields={'isSeries'})
 
-    # TODO hook into item deletion and decrement nSeries of parent study
+    events.bind('model.item.remove', info['name'], _itemDeleted)
