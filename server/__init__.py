@@ -19,7 +19,7 @@ class PluginSettings(object):
 
 class Study(Resource):
     def __init__(self):
-        super(Resource, self).__init__()
+        super(Study, self).__init__()
         self.resourceName = 'study'
 
         self.route('GET', (), self.listStudies)
@@ -42,9 +42,10 @@ class Study(Resource):
         Description('Create a new study.')
         .param('identifier', 'The unique ID of the study.')
         .param('date', 'Study date.', dataType='dateTime')
+        .param('modality', 'Study modality.')
         .param('description', 'Study description.')
     )
-    def createStudy(self, identifier, date, description):
+    def createStudy(self, identifier, date, modality, description):
         studiesCollId = Setting().get(PluginSettings.STUDIES_COLL_ID)
         if not studiesCollId:
             raise Exception('You must specify a studies collection.')
@@ -59,12 +60,13 @@ class Study(Resource):
         study['nSeries'] = 0
         study['studyDate'] = date
         study['studyId'] = identifier
+        study['studyModality'] = modality
         return Folder().save(study)
 
 
 class Series(Resource):
     def __init__(self):
-        super(Resource, self).__init__()
+        super(Series, self).__init__()
         self.resourceName = 'series'
 
         self.route('POST', (), self.createSeries)
@@ -116,9 +118,12 @@ def load(info):
         'tools.staticdir.dir': os.path.join(info['pluginRootDir'], 'dist', 'stroke_ct_static')
     }
 
-    Folder().ensureIndex('studyId')
+    info['apiRoot'].study = Study()
+    info['apiRoot'].series = Series()
+
+    Folder().ensureIndex(([('studyId', 1)], {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
-        'isStudy', 'nSeries', 'studyDate', 'studyId'})
+        'isStudy', 'nSeries', 'studyDate', 'studyId', 'studyModality'})
     Item().exposeFields(level=AccessType.READ, fields={'isSeries'})
 
     events.bind('model.item.remove', info['name'], _itemDeleted)
