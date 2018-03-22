@@ -7,7 +7,6 @@ from girder.constants import AccessType
 from girder.models.collection import Collection
 from girder.models.folder import Folder
 from girder.models.item import Item
-from girder.models.setting import Setting
 from girder.utility import setting_utilities
 from girder.utility.server import staticFile
 from girder.utility.plugin_utilities import registerPluginWebroot
@@ -29,7 +28,7 @@ class Study(Resource):
     @filtermodel(Folder)
     @autoDescribeRoute(
         Description('List studies.')
-        .pagingParams(defaultSort='studyId')
+        .pagingParams(defaultSort='studyId', defaultLimit=500)
     )
     def listStudies(self, limit, offset, sort):
         cursor = Folder().find({'studyId': {'$exists': True}}, sort=sort)
@@ -46,16 +45,10 @@ class Study(Resource):
         .param('description', 'Study description.')
     )
     def createStudy(self, identifier, date, modality, description):
-        studiesCollId = Setting().get(PluginSettings.STUDIES_COLL_ID)
-        if not studiesCollId:
-            raise Exception('You must specify a studies collection.')
-
-        studiesColl = Collection().load(
-            studiesCollId, exc=True, level=AccessType.WRITE, user=self.getCurrentUser())
-
+        user = self.getCurrentUser()
         study = Folder().createFolder(
-            parent=studiesColl, name=identifier, description=description, parentType='collection',
-            public=False, creator=self.getCurrentUser(), allowRename=True)
+            parent=user, name=identifier, description=description, parentType='user', public=False,
+            creator=user, allowRename=True)
         study['isStudy'] = True
         study['nSeries'] = 0
         study['studyDate'] = date
