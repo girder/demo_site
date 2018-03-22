@@ -10,11 +10,12 @@ v-app
           ul.display-1
            li.ml-5.my-3 #[router-link(to="/stroke") Stroke Assessment]
            li.ml-5.my-3 #[router-link(to="/ct_terms") CT Visualization]
-        v-flex(xs12, md8)
-          .headline.
-            Kitware is a leader in scientific software research, development, and consulting for
-            medical, computer vision, high-performance computing, informatics, and numerous other
-            domains. #[router-link(to="learn") Learn more...]
+        v-layout(row, justify-center)
+          v-flex(xs12, md8)
+            .headline.
+              Kitware is a leader in scientific software research, development, and consulting for
+              medical, computer vision, high-performance computing, informatics, and numerous other
+              domains. #[router-link(to="learn") Learn more...]
 </template>
 
 <style lang="stylus" scoped>
