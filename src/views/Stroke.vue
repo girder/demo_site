@@ -29,19 +29,23 @@ v-app
                     :min="startDate", no-title)
         v-flex(xs5)
     v-flex(xs12)
-     v-data-table(no-data-text="No studies found.", no-results-text="No matching studies.",
-         :items="studies", :headers="headers", :loading="loading", :search="search",
-         :custom-filter="customFilter", :filter="filter", :rows-per-page-items="rowsPerPageItems",
-         rows-per-page-text="Studies per page:")
-      template(slot="items", slot-scope="props")
-        td {{ props.item.studyId }}
-        td
-          v-tooltip(bottom)
-            span(slot="activator" ) {{ dateformat(props.item.studyDate, 'mmm d, yyyy') }}
-            span {{ props.item.studyDate }}
-        td {{ props.item.studyModality }}
-        td {{ props.item.description }}
-        td {{ props.item.nSeries }}
+      v-data-table(no-data-text="No studies found.", no-results-text="No matching studies.",
+          :items="studies", :headers="headers", :loading="loading", :search="search",
+          :custom-filter="customFilter", :filter="filter", :rows-per-page-items="rowsPerPageItems",
+          rows-per-page-text="Studies per page:")
+        template(slot="items", slot-scope="props")
+          tr.study-row(@click="$emit('selectStudy', props.item)")
+            td {{ props.item.studyId }}
+            td
+              v-tooltip(bottom)
+                span(slot="activator" ) {{ dateformat(props.item.studyDate, 'mmm d, yyyy') }}
+                span {{ props.item.studyDate }}
+            td {{ props.item.studyModality }}
+            td {{ props.item.description }}
+            td {{ props.item.nSeries }}
+            td.text-xs-right
+              v-btn(icon, color="primary", flat)
+                v-icon visibility
 </template>
 
 <script>
@@ -74,6 +78,10 @@ export default {
     }, {
       text: 'Series',
       value: 'nSeries',
+    }, {
+      text: 'Actions',
+      sortable: false,
+      align: 'right',
     }],
     rowsPerPageItems: [10, 25, 50, { text: 'All', value: -1 }],
     startDate: null,
@@ -115,4 +123,7 @@ export default {
 <style lang="stylus" scoped>
 .kw-logo
   height 36px
+
+.study-row
+  cursor pointer
 </style>

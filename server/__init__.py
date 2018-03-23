@@ -71,7 +71,6 @@ class Series(Resource):
         .modelParam('studyId', 'The parent study.', model=Folder, level=AccessType.WRITE,
                     paramType='query')
         .param('name', 'The name of the series.')
-        .param('preset', 'Volume rendering preset to use.', required=False)
     )
     def createSeries(self, study, name):
         series = Item().createItem(name, creator=self.getCurrentUser(), folder=study)
