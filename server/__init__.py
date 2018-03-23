@@ -88,15 +88,15 @@ class Series(Resource):
                     paramType='query')
         .param('name', 'The name of the series.')
     )
-    def createSeries(self, study, name):
-        series = Item().createItem(name, creator=self.getCurrentUser(), folder=study)
+    def createSeries(self, folder, name):
+        series = Item().createItem(name, creator=self.getCurrentUser(), folder=folder)
         series['isSeries'] = True
         series = Item().save(series)
 
         Folder().update({
-            '_id': study['_id']
+            '_id': folder['_id']
         }, {
-            'nSeries': {'$increment': 1}
+            '$inc': {'nSeries': 1}
         }, multi=False)
 
         return series
@@ -108,7 +108,7 @@ def _itemDeleted(event):
         Folder().update({
             '_id': item['folderId']
         }, {
-            'nSeries': {'$increment': -1}
+            '$inc': {'nSeries': -1}
         }, multi=False)
 
 
