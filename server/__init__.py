@@ -62,7 +62,23 @@ class Series(Resource):
         super(Series, self).__init__()
         self.resourceName = 'series'
 
+        self.route('GET', (), self.listSeries)
         self.route('POST', (), self.createSeries)
+
+    @access.public
+    @filtermodel(Item)
+    @autoDescribeRoute(
+        Description('List series in a study.')
+        .modelParam('studyId', 'The ID of the parent study.', paramType='query', model=Folder,
+                    level=AccessType.READ)
+        .pagingParams(defaultSort='name', defaultLimit=500)
+    )
+    def listSeries(self, folder, limit, offset, sort):
+        import time
+        time.sleep(1.2)
+        return list(Folder().childItems(folder, limit=limit, offset=offset, sort=sort, filters={
+            'isSeries': True
+        }))
 
     @access.user
     @filtermodel(Item)
@@ -113,7 +129,7 @@ def load(info):
     info['apiRoot'].study = Study()
     info['apiRoot'].series = Series()
 
-    Folder().ensureIndex(([('studyId', 1)], {'sparse': True}))
+    Folder().ensureIndex(('studyId', {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
         'isStudy', 'nSeries', 'studyDate', 'studyId', 'studyModality'})
     Item().exposeFields(level=AccessType.READ, fields={'isSeries'})

@@ -1,17 +1,18 @@
 <template lang="pug">
-v-app
+v-app(dark)
   v-toolbar(app)
     v-toolbar-title
       img.kw-logo(src="@/assets/KWLogo.svg")
     v-spacer
-    .headline Stroke Assessment Algorithm
+    .headline Stroke Assessment
   v-content
-    v-flex(xs12)
-      v-layout(row)
-        v-flex.mt-3(xs6)
-          v-text-field.pl-3(placeholder="Search...", prepend-icon="search", v-model="search")
+    v-flex(xs12, md10, offset-md1)
+      v-layout(row, wrap)
+        // Filtering form
+        v-flex.mt-3.px-3(xs12, md6)
+          v-text-field(placeholder="Search...", prepend-icon="search", v-model="search")
           v-layout(row)
-            v-flex.pl-3(xs6)
+            v-flex(xs6)
               v-menu(lazy, :close-on-content-click="false", v-model="startDateMenu", offset-y,
                   full-width, min-width="290px", :return-value.sync="startDate", :nudge-right="40",
                   ref="startDateMenuRef", transition="scale-transition")
@@ -27,14 +28,19 @@ v-app
                     v-model="endDate")
                 v-date-picker(v-model="endDate", @change="$refs.endDateMenuRef.save(endDate)",
                     :min="startDate", no-title)
-        v-flex(xs5)
-    v-flex(xs12)
+
+        // Upload button and login message
+        v-flex(xs12, md6)
+
+    // Study list
+    v-flex(xs12, md10, offset-md1)
       v-data-table(no-data-text="No studies found.", no-results-text="No matching studies.",
           :items="studies", :headers="headers", :loading="loading", :search="search",
           :custom-filter="customFilter", :filter="filter", :rows-per-page-items="rowsPerPageItems",
           rows-per-page-text="Studies per page:")
         template(slot="items", slot-scope="props")
-          tr.study-row(@click="$emit('selectStudy', props.item)")
+          tr.study-row(@click="$emit('select', props.item)",
+              :active="selectedStudy && selectedStudy._id === props.item._id")
             td {{ props.item.studyId }}
             td
               v-tooltip(bottom)
@@ -44,8 +50,19 @@ v-app
             td {{ props.item.description }}
             td {{ props.item.nSeries }}
             td.text-xs-right
-              v-btn(icon, color="primary", flat)
+              v-btn(icon, flat)
                 v-icon visibility
+
+    // Series list
+    v-flex.mt-3(xs12, md10, offset-md1 v-if="selectedStudy")
+      v-card
+        v-card-title
+          h3.headline Series for study {{ selectedStudy.studyId }}
+        v-layout.py-3(justify-center, align-center, v-if="loadingSeries")
+          v-progress-circular(indeterminate, color="primary")
+        v-alert.my-0(:value="!loadingSeries && !series.length", color="info")
+          v-icon(dark) info
+          span.ml-2.body-2 There are no series in this study.
 </template>
 
 <script>
@@ -56,6 +73,18 @@ export default {
     loading: {
       type: Boolean,
       default: false,
+    },
+    loadingSeries: {
+      type: Boolean,
+      default: false,
+    },
+    selectedStudy: {
+      type: Object,
+      default: null,
+    },
+    series: {
+      type: Array,
+      required: true,
     },
     studies: {
       type: Array,
