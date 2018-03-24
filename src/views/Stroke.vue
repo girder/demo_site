@@ -50,7 +50,7 @@ v-app(dark)
             td {{ props.item.description }}
             td {{ props.item.nSeries }}
             td.text-xs-right
-              v-btn(icon, flat)
+              v-btn(icon, flat, @click.stop="")
                 v-icon visibility
 
     // Series list
@@ -63,12 +63,18 @@ v-app(dark)
         v-alert.my-0(:value="!loadingSeries && !series.length", color="info")
           v-icon(dark) info
           span.ml-2.body-2 There are no series in this study.
+
+        v-layout.mb-4.pb-4(v-if="series.length", row, wrap, justify-center, align-center)
+          v-flex.text-xs-center(v-for="img in series", :key="img._id", xs12, sm6, md4, lg3)
+            series(:series="img")
 </template>
 
 <script>
 import dateformat from 'dateformat';
+import Series from './Series';
 
 export default {
+  components: { Series },
   props: {
     loading: {
       type: Boolean,

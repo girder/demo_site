@@ -31,6 +31,7 @@ export default {
     },
     selectStudy(study) {
       this.selectedStudy = study;
+      this.series = [];
       this.fetchingSeries = true;
       rest.get('/series', {
         params: {

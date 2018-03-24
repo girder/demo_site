@@ -74,8 +74,6 @@ class Series(Resource):
         .pagingParams(defaultSort='name', defaultLimit=500)
     )
     def listSeries(self, folder, limit, offset, sort):
-        import time
-        time.sleep(1.2)
         return list(Folder().childItems(folder, limit=limit, offset=offset, sort=sort, filters={
             'isSeries': True
         }))
