@@ -65,7 +65,7 @@ v-app(dark)
           span.ml-2.body-2 There are no series in this study.
 
         v-layout.mb-4.pb-4(v-if="series.length", row, wrap, justify-center, align-center)
-          v-flex.text-xs-center(v-for="img in series", :key="img._id", xs12, sm6, md4, lg3)
+          v-flex.text-xs-center.mb-4.mx-2(v-for="img in series", :key="img._id")
             series(:series="img")
 </template>
 

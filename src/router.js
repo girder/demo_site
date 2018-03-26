@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import CT from '@/views/CT';
+import Glance from '@/views/Glance';
+import GlanceItem from '@/routes/GlanceItem';
 import CTTerms from '@/views/CTTerms';
 import FrontPage from '@/views/FrontPage';
 import StrokeContainer from '@/containers/StrokeContainer';
@@ -12,8 +13,11 @@ export default new Router({
     path: '/',
     component: FrontPage,
   }, {
-    path: '/ct',
-    component: CT,
+    path: '/glance',
+    component: Glance,
+  }, {
+    path: '/glance/:id',
+    component: GlanceItem,
   }, {
     path: '/ct_terms',
     component: CTTerms,

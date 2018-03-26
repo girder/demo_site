@@ -15,7 +15,7 @@ v-app
               indemnify and hold harmless Kitware for any damages occurring from your use of this
               free service. blah blah blah....
             .text-xs-center.mt-3
-              v-btn(color="primary", to="/ct", large) Accept Terms and Conditions
+              v-btn(color="primary", to="/glance", large) Accept Terms and Conditions
         v-flex(xs12)
 </template>
 

@@ -26,7 +26,7 @@ export default {
   mounted() {
     const base = `/item/${this.series._id}/interactive_thumbnail/`;
 
-    rest.get(`${base}/index.json`).then(({ data }) => {
+    rest.get(`${base}index.json`).then(({ data }) => {
       const container = this.$el.querySelector('.cinema-img');
       this.qdm = new QueryDataModel(data, `${getApiUrl()}${base}`);
       this.qdm.onDataChange(({ image }) => {
