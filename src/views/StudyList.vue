@@ -1,5 +1,5 @@
 <template lang="pug">
-v-app(dark)
+v-app()
   v-toolbar(app)
     v-toolbar-title
       img.kw-logo(src="@/assets/KWLogo.svg")
@@ -30,7 +30,10 @@ v-app(dark)
                     :min="startDate", no-title)
 
         // Upload button and login message
-        v-flex(xs12, md6)
+        v-flex.text-xs-right(xs12, md6)
+          v-btn.my-4(large, color="success", to="upload")
+            v-icon.mr-2 file_upload
+            | Upload
 
     // Study list
     v-flex(xs12, md10, offset-md1)
