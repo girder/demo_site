@@ -4,7 +4,7 @@ import Glance from '@/views/Glance';
 import GlanceItem from '@/routes/GlanceItem';
 import CTTerms from '@/views/CTTerms';
 import FrontPage from '@/views/FrontPage';
-import StrokeContainer from '@/containers/StrokeContainer';
+import StudyListContainer from '@/containers/StudyListContainer';
 
 Vue.use(Router);
 
@@ -22,7 +22,7 @@ export default new Router({
     path: '/ct_terms',
     component: CTTerms,
   }, {
-    path: '/stroke',
-    component: StrokeContainer,
+    path: '/studies',
+    component: StudyListContainer,
   }],
 });

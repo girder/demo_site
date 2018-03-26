@@ -1,15 +1,15 @@
 <template lang="pug">
-stroke(:series="series", :studies="studies", :selected-study="selectedStudy", :loading="fetching",
-    :loading-series="fetchingSeries", @select="selectStudy")
+study-list(:series="series", :studies="studies", :selected-study="selectedStudy",
+    :loading="fetching", :loading-series="fetchingSeries", @select="selectStudy")
 </template>
 
 <script>
 import rest from '@/rest';
-import Stroke from '@/views/Stroke';
+import StudyList from '@/views/StudyList';
 import { fetchingContainer, pagingContainer } from '@/utils/mixins';
 
 export default {
-  components: { Stroke },
+  components: { StudyList },
   mixins: [fetchingContainer, pagingContainer],
   data: () => ({
     studies: [],
