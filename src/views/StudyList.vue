@@ -1,5 +1,5 @@
 <template lang="pug">
-v-app()
+v-app(dark)
   v-toolbar(app)
     v-toolbar-title
       img.kw-logo(src="@/assets/KWLogo.svg")
@@ -44,7 +44,7 @@ v-app()
         template(slot="items", slot-scope="props")
           tr.study-row(@click="$emit('select', props.item)",
               :active="selectedStudy && selectedStudy._id === props.item._id")
-            td {{ props.item.studyId }}
+            td {{ props.item.patientId }}
             td
               v-tooltip(bottom)
                 span(slot="activator" ) {{ dateformat(props.item.studyDate, 'mmm d, yyyy') }}
@@ -102,8 +102,8 @@ export default {
   },
   data: () => ({
     headers: [{
-      text: 'Identifier',
-      value: 'studyId',
+      text: 'Patient Identifier',
+      value: 'patientId',
     }, {
       text: 'Study Date',
       value: 'studyDate',

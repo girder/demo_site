@@ -5,6 +5,7 @@ import GlanceItem from '@/routes/GlanceItem';
 import CTTerms from '@/views/CTTerms';
 import FrontPage from '@/views/FrontPage';
 import StudyListContainer from '@/containers/StudyListContainer';
+import UploadContainer from '@/containers/UploadContainer';
 
 Vue.use(Router);
 

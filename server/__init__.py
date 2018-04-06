@@ -28,10 +28,10 @@ class Study(Resource):
     @filtermodel(Folder)
     @autoDescribeRoute(
         Description('List studies.')
-        .pagingParams(defaultSort='studyId', defaultLimit=500)
+        .pagingParams(defaultSort='patientId', defaultLimit=500)
     )
     def listStudies(self, limit, offset, sort):
-        cursor = Folder().find({'studyId': {'$exists': True}}, sort=sort)
+        cursor = Folder().find({'isStudy': True}, sort=sort)
         return list(Folder().filterResultsByPermission(
             cursor, level=AccessType.READ, user=self.getCurrentUser(), limit=limit, offset=offset))
 
@@ -39,7 +39,7 @@ class Study(Resource):
     @filtermodel(Folder)
     @autoDescribeRoute(
         Description('Create a new study.')
-        .param('identifier', 'The unique ID of the study.')
+        .param('patentId', 'The anonymized patient identifier or MRN.')
         .param('date', 'Study date.', dataType='dateTime')
         .param('modality', 'Study modality.')
         .param('description', 'Study description.')
@@ -52,7 +52,7 @@ class Study(Resource):
         study['isStudy'] = True
         study['nSeries'] = 0
         study['studyDate'] = date
-        study['studyId'] = identifier
+        study['patientId'] = identifier
         study['studyModality'] = modality
         return Folder().save(study)
 
@@ -127,9 +127,9 @@ def load(info):
     info['apiRoot'].study = Study()
     info['apiRoot'].series = Series()
 
-    Folder().ensureIndex(('studyId', {'sparse': True}))
+    Folder().ensureIndex(('isStudy', {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
-        'isStudy', 'nSeries', 'studyDate', 'studyId', 'studyModality'})
+        'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality'})
     Item().exposeFields(level=AccessType.READ, fields={'isSeries'})
 
     events.bind('model.item.remove', info['name'], _itemDeleted)
