@@ -54,7 +54,8 @@ class Photomorph(Resource):
         outdir = VolumePath('__output__/out.mpeg')
         name = name or str(datetime.datetime.utcnow())
         outputFolder = Folder().createFolder(
-            user, '__Photomorphs__', public=False, creator=user, reuseExisting=True)
+            user, '__Photomorphs__', public=False, creator=user, reuseExisting=True,
+            parentType='user')
         outputItem = Item().createItem(name, creator=user, folder=outputFolder)
 
         job = docker_run.delay(
@@ -189,7 +190,7 @@ def load(info):
 
     info['apiRoot'].study = Study()
     info['apiRoot'].series = Series()
-    info['apiRoot'].photomorpth = Photomorph()
+    info['apiRoot'].photomorph = Photomorph()
 
     Folder().ensureIndex(('isStudy', {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
@@ -197,5 +198,9 @@ def load(info):
 
     Item().ensureIndex(('isPhotomorph', {'sparse': True}))
     Item().exposeFields(level=AccessType.READ, fields={'isSeries', 'isPhotomorph'})
+
+    Job().exposeFields(level=AccessType.READ, fields={
+        'photomorphInputFolderId', 'photomorphOutputItemId'
+    })
 
     events.bind('model.item.remove', info['name'], _itemDeleted)

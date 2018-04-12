@@ -34,7 +34,7 @@
       v-progress-linear(:value="totalProgressPercent", height="20")
 
   slot(name="files")
-    v-list.file-list.pb-4(v-show="files.length", dense)
+    v-list.pb-4(v-show="files.length")
       v-list-tile.file-tile(v-for="(file, i) in files", :key="file.file.name", avatar,
           :class="`status-${file.status}`")
         v-list-tile-avatar
@@ -44,7 +44,10 @@
               :value="progressPercent(file.progress)", :indeterminate="file.progress.indeterminate")
           v-icon(v-if="file.status === 'done'", color="success", large) check
           v-icon(v-if="file.status === 'error'", color="error", large) warning
-
+        v-list-tile-avatar(tile)
+          .img-preview.mr-2.text-xs-center
+            img(v-if="file.file.type.indexOf('image/') === 0", :src="imgSrc(file.file)")
+            div(v-else) N/A
         v-list-tile-content
           v-list-tile-title {{ file.file.name }}
           v-list-tile-sub-title
@@ -105,6 +108,9 @@ export default {
     },
   },
   methods: {
+    imgSrc(file) {
+      return window.URL.createObjectURL(file);
+    },
     progressPercent(progress) {
       if (!progress.total) {
         return 0;
@@ -183,4 +189,9 @@ $img = linear-gradient(
   display flex
   flex-direction column
   height 100%
+
+.img-preview
+  >img
+    width 56px
+    height 56px
 </style>

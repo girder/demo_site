@@ -1,0 +1,3 @@
+name: Stroke CT assessment
+dependencies:
+  - worker
