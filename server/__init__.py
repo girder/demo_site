@@ -1,4 +1,7 @@
+import datetime
+import json
 import os
+
 from girder import events
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute
@@ -7,14 +10,74 @@ from girder.constants import AccessType
 from girder.models.collection import Collection
 from girder.models.folder import Folder
 from girder.models.item import Item
+from girder.plugins.jobs.models.job import Job
 from girder.utility import setting_utilities
 from girder.utility.server import staticFile
 from girder.utility.plugin_utilities import registerPluginWebroot
+from girder_worker.docker.tasks import docker_run
+from girder_worker.docker.transforms import VolumePath
+from girder_worker.docker.transforms.girder import (
+    GirderFolderIdToVolume, GirderUploadVolumePathToItem)
 
 
 class PluginSettings(object):
     STUDIES_COLL_ID = 'stroke_ct.studies_collection_id'
 
+
+class Photomorph(Resource):
+    def __init__(self):
+        super(Photomorph, self).__init__()
+        self.resourceName = 'photomorph'
+
+        self.route('GET', (), self.listPhotomorphs)
+        self.route('POST', (), self.runPhotomorph)
+
+    @access.public
+    @filtermodel(Item)
+    @autoDescribeRoute(
+        Description('List photomorphs visible to your user.')
+        .pagingParams(defaultSort='name', defaultLimit=500)
+    )
+    def listPhotomorphs(self, limit, offset, sort):
+        pass  # TODO return a list of photomorphs filtered by permissions
+
+    @access.user
+    @filtermodel(Job)
+    @autoDescribeRoute(
+        Description('Run photomorph on a folder of images.')
+        .modelParam('folderId', 'The ID of the folder containing the input images.',
+                    paramType='query', model=Folder, level=AccessType.READ)
+        .param('name', 'Name for the photomorph', required=False)
+    )
+    def runPhotomorph(self, folder, name):
+        user = self.getCurrentUser()
+        outdir = VolumePath('__output__/out.mpeg')
+        name = name or str(datetime.datetime.utcnow())
+        outputFolder = Folder().createFolder(
+            user, '__Photomorphs__', public=False, creator=user, reuseExisting=True)
+        outputItem = Item().createItem(name, creator=user, folder=outputFolder)
+
+        job = docker_run.delay(
+            'photomorph:latest', container_args=[
+                GirderFolderIdToVolume(folder['_id'], folder_name='input'),
+                outdir
+            ], girder_job_title='Photomorph: %s' % folder['name'],
+            girder_result_hooks=[
+                GirderUploadVolumePathToItem(outdir, outputItem['_id'], upload_kwargs={
+                    'reference': json.dumps({
+                        'photomorph': True,
+                        'input_folder': str(folder['_id']),
+                    })
+                })
+            ]).job
+
+        outputItem['isPhotomorph'] = True
+        outputItem['photomorphJobId'] = job['_id']
+        Item().save(outputItem)
+
+        job['photomorphInputFolderId'] = folder['_id']
+        job['photomorphOutputItemId'] = outputItem['_id']
+        return Job().save(job)
 
 class Study(Resource):
     def __init__(self):
@@ -126,10 +189,13 @@ def load(info):
 
     info['apiRoot'].study = Study()
     info['apiRoot'].series = Series()
+    info['apiRoot'].photomorpth = Photomorph()
 
     Folder().ensureIndex(('isStudy', {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
         'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality'})
-    Item().exposeFields(level=AccessType.READ, fields={'isSeries'})
+
+    Item().ensureIndex(('isPhotomorph', {'sparse': True}))
+    Item().exposeFields(level=AccessType.READ, fields={'isSeries', 'isPhotomorph'})
 
     events.bind('model.item.remove', info['name'], _itemDeleted)

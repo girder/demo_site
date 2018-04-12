@@ -5,7 +5,7 @@ import GlanceItem from '@/routes/GlanceItem';
 import CTTerms from '@/views/CTTerms';
 import FrontPage from '@/views/FrontPage';
 import StudyListContainer from '@/containers/StudyListContainer';
-import UploadContainer from '@/containers/UploadContainer';
+import UploadPage from '@/views/UploadPage';
 
 Vue.use(Router);
 
@@ -25,5 +25,8 @@ export default new Router({
   }, {
     path: '/studies',
     component: StudyListContainer,
+  }, {
+    path: '/upload',
+    component: UploadPage,
   }],
 });
