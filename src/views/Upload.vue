@@ -1,18 +1,17 @@
 <template lang="pug">
 .upload-wrapper
-  slot(name="dropzone")
-    .dropzone-wrapper(
-        v-if="!files.length", :class="dropzoneClass", @dragenter="dropzoneClass = 'animate'",
-        @dragleave="dropzoneClass = null", @drop="dropzoneClass = null")
-      .dropzone-message
-        v-icon(size="50px") attach_file
-        .title.mt-3 {{ dropzoneMessage }}
-      input.file-input(type="file", :multiple="multiple", @change="updateFiles")
+  .dropzone-wrapper(
+      v-if="!files.length", :class="dropzoneClass", @dragenter="dropzoneClass = 'animate'",
+      @dragleave="dropzoneClass = null", @drop="dropzoneClass = null")
+    .dropzone-message
+      v-icon(size="50px") attach_file
+      .title.mt-3 {{ dropzoneMessage }}
+    input.file-input(type="file", :multiple="multiple", @change="filesChanged")
 
   .pb-2.px-3(v-show="files.length && !errorMessage")
     v-subheader(v-show="!uploading") {{ statusMessage }}
 
-    v-btn(v-if="!uploading", color="warning", @click="$emit('clear')")
+    v-btn(v-if="!uploading", color="warning", @click="files = []")
       v-icon.mr-1 close
       | Clear all
     v-btn(v-if="!uploading", color="success", @click="$emit('start')")
@@ -26,49 +25,52 @@
         v-icon.mr-1 replay
         | Resume upload
 
-  slot(name="progress")
-    div(v-if="uploading")
-      .subheading.px-3.
-        {{ formatDataSize(totalProgress) }} / {{ formatDataSize(totalSize) }}
-        ({{ totalProgressPercent }}%)
-      v-progress-linear(:value="totalProgressPercent", height="20")
+  div(v-if="uploading")
+    .subheading.px-3.
+      {{ formatDataSize(totalProgress) }} / {{ formatDataSize(totalSize) }}
+      ({{ totalProgressPercent }}%)
+    v-progress-linear(:value="totalProgressPercent", height="20")
 
-  slot(name="files")
-    v-list(v-show="files.length")
-      v-list-tile.file-tile(v-for="(file, i) in files", :key="file.file.name", avatar,
-          :class="`status-${file.status}`")
-        v-list-tile-avatar
-          v-btn.mx-0(v-if="file.status === 'pending'", icon, @click="$emit('removeFile', i)")
-            v-icon close
-          v-progress-circular(v-if="file.status === 'uploading'", color="primary", :rotate="-90",
-              :value="progressPercent(file.progress)", :indeterminate="file.progress.indeterminate")
-          v-icon(v-if="file.status === 'done'", color="success", large) check
-          v-icon(v-if="file.status === 'error'", color="error", large) warning
-        v-list-tile-avatar(tile)
-          .img-preview.mr-2
-            img(v-if="file.file.type.indexOf('image/') === 0", :src="imgSrc(file.file)")
-            .no-preview(v-else) N/A
-        v-list-tile-content
-          v-list-tile-title {{ file.file.name }}
-          v-list-tile-sub-title
-            span(v-if="file.progress.current") {{ formatDataSize(file.progress.current ) }} /&nbsp;
-            span {{ formatDataSize(file.file.size) }}
+  div(v-show="files.length")
+    v-alert(v-if="!uploading", type="info", :value="true").
+      You must sort these files into the correct order prior to uploading them. Drag and drop
+      the files to re-order them.
+
+    v-list
+      draggable(v-model="files", :options="draggableOpts")
+        v-list-tile.file-tile(v-for="(file, i) in files", :key="file.file.name", avatar,
+            :class="`status-${file.status}`")
+          v-list-tile-avatar
+            v-btn.mx-0(v-if="file.status === 'pending'", icon, @click="removeFile(i)")
+              v-icon close
+            v-progress-circular(v-if="file.status === 'uploading'", color="primary", :rotate="-90",
+                :value="progressPercent(file.progress)",
+                :indeterminate="file.progress.indeterminate")
+            v-icon(v-if="file.status === 'done'", color="success", large) check
+            v-icon(v-if="file.status === 'error'", color="error", large) warning
+          v-list-tile-avatar(tile)
+            .img-preview.mr-2
+              img(v-if="file.file.type.indexOf('image/') === 0", :src="imgSrc(file.file)")
+              .no-preview(v-else) N/A
+          v-list-tile-content
+            v-list-tile-title {{ file.file.name }}
+            v-list-tile-sub-title
+              span(v-if="file.progress.current") {{ formatDataSize(file.progress.current ) }} /
+              span  {{ formatDataSize(file.file.size) }}
 </template>
 
 <script>
+import draggable from 'vuedraggable';
 import { sizeFormatter } from '../utils/mixins';
 import { ResourceIcons } from '../constants';
 
 export default {
+  components: { draggable },
   mixins: [sizeFormatter],
   props: {
     errorMessage: {
       default: null,
       type: String,
-    },
-    files: {
-      default: () => [],
-      type: Array,
     },
     multiple: {
       default: true,
@@ -80,9 +82,14 @@ export default {
     },
   },
   data: () => ({
+    files: [],
     dragover: false,
     dropzoneClass: null,
     ResourceIcons,
+    draggableOpts: {
+      ghostClass: 'g-drag-ghost',
+      animation: 80,
+    }
   }),
   computed: {
     dropzoneMessage() {
@@ -108,6 +115,15 @@ export default {
     },
   },
   methods: {
+    filesChanged({ target }) {
+      this.files = [...target.files].map(file => ({
+        file,
+        status: 'pending',
+        progress: {},
+        upload: null,
+        result: null,
+      }));
+    },
     imgSrc(file) {
       return window.URL.createObjectURL(file);
     },
@@ -117,8 +133,8 @@ export default {
       }
       return Math.round((100 * (progress.current || 0)) / progress.total);
     },
-    updateFiles({ target }) {
-      this.$emit('filesChanged', target.files);
+    removeFile(i) {
+      this.files.splice(i, 1);
     },
   },
 };
@@ -200,4 +216,7 @@ $img = linear-gradient(
     color white
     background-color black
     line-height 56px
+
+.g-drag-ghost
+  background-color #fcf2c7
 </style>

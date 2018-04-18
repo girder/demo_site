@@ -1,7 +1,6 @@
 <template lang="pug">
-upload(:multiple="multiple", :error-message="errorMessage", :uploading="uploading", :files="files",
-    @start="start", @resume="start", @clear="files = []", @filesChanged="filesChanged",
-    @removeFile="removeFile")
+upload(:multiple="multiple", :error-message="errorMessage", :uploading="uploading",
+    @start="start", @resume="start", ref="view")
 </template>
 
 <script>
@@ -22,36 +21,20 @@ export default {
     errorMessage: null,
     statusMessage: null,
     uploading: false,
-    files: [],
     folder: null,
   }),
-  computed: mapState('auth', ['user']),
+  computed: {
+    files() {
+      return this.$refs.view.files;
+    },
+    ...mapState('auth', ['user'])
+  },
   methods: {
-    filesChanged(files) {
-      this.files = [...files].map(file => ({
-        file,
-        status: 'pending',
-        progress: {},
-        upload: null,
-        result: null,
-      }));
-    },
-    removeFile(i) {
-      this.files.splice(i, 1);
-    },
     async createUploadFolder() {
-      const { data } = await rest.post('folder', formEncode({
-        name: `Photomorph Upload ${new Date().toISOString()}`,
-        parentType: 'user',
-        parentId: this.user._id,
-      }));
-      return data;
+      return (await rest.post('photomorph')).data;
     },
     async processUpload() {
-      const { data } = await rest.post('photomorph', formEncode({
-        folderId: this.folder._id,
-      }));
-      return data;
+      return (await rest.post(`photomorph/${this.folder._id}/process`)).data;
     },
     async start() {
       this.uploading = true;
@@ -87,7 +70,14 @@ export default {
             if (file.upload) {
               file.result = await resumeUpload(file.file, file.upload, { progress });
             } else {
-              file.result = await uploadFile(file.file, this.folder, { progress });
+              file.result = await uploadFile(file.file, this.folder, {
+                progress,
+                params: {
+                  reference: JSON.stringify({
+                    photomorphOrdinal: i
+                  })
+                },
+              });
             }
             results.push(file.result);
             file.status = 'done';
@@ -115,7 +105,6 @@ export default {
         icon: 'check_circled',
         ms: 3000,
       });
-      this.files = [];
       this.folder = null;
       this.$emit('done', {
         job,

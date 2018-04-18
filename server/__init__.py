@@ -24,47 +24,73 @@ class PluginSettings(object):
     STUDIES_COLL_ID = 'stroke_ct.studies_collection_id'
 
 
+def _handleUpload(event):
+    upload, file = event.info['upload'], event.info['file']
+
+    try:
+        reference = json.loads(upload.get('reference'))
+    except (TypeError, ValueError):
+        return
+
+    if isinstance(reference, dict) and 'photomorphOrdinal' in reference:
+        item = Item().load(file['itemId'], force=True, exc=True)
+        item['name'] = '%05d_%s' % (reference['photomorphOrdinal'], item['name'])
+        Item().save(item)
+
+
 class Photomorph(Resource):
     def __init__(self):
         super(Photomorph, self).__init__()
         self.resourceName = 'photomorph'
 
-        self.route('GET', (), self.listPhotomorphs)
-        self.route('POST', (), self.runPhotomorph)
+        self.route('POST', (), self.createPhotomorph)
+        self.route('POST', (':id', 'process'), self.runPhotomorph)
 
-    @access.public
-    @filtermodel(Item)
+    @access.user
+    @filtermodel(Folder)
     @autoDescribeRoute(
-        Description('List photomorphs visible to your user.')
-        .pagingParams(defaultSort='name', defaultLimit=500)
+        Description('Create a new photomorph.')
+        .notes('Returns the folder into which input images should be uploaded.')
     )
-    def listPhotomorphs(self, limit, offset, sort):
-        pass  # TODO return a list of photomorphs filtered by permissions
+    def createPhotomorph(self):
+        user = self.getCurrentUser()
+        name = 'Photomorph %s' % datetime.datetime.utcnow()
+        folder = Folder().createFolder(
+            user, name=name, parentType='user', public=False, creator=user)
+        return Folder().createFolder(folder, name='_input', creator=user)
 
     @access.user
     @filtermodel(Job)
     @autoDescribeRoute(
         Description('Run photomorph on a folder of images.')
-        .modelParam('folderId', 'The ID of the folder containing the input images.',
-                    paramType='query', model=Folder, level=AccessType.READ)
-        .param('name', 'Name for the photomorph', required=False)
+        .modelParam('id', 'The ID of the folder containing the input images.',
+                    model=Folder, level=AccessType.READ)
     )
-    def runPhotomorph(self, folder, name):
+    def runPhotomorph(self, folder):
         user = self.getCurrentUser()
-        outdir = VolumePath('__output__/out.mpeg')
-        name = name or str(datetime.datetime.utcnow())
+        mpegOut = VolumePath('__output__/out.mpeg')
+        gifOut = VolumePath('__output__/out.gif')
+
+        parent = Folder().load(folder['parentId'], level=AccessType.WRITE, exc=True, user=user)
         outputFolder = Folder().createFolder(
-            user, '__Photomorphs__', public=False, creator=user, reuseExisting=True,
-            parentType='user')
-        outputItem = Item().createItem(name, creator=user, folder=outputFolder)
+            parent, '_output', public=False, creator=user, reuseExisting=True)
+        outputMpeg = Item().createItem('out.mpeg', creator=user, folder=outputFolder)
+        outputGif = Item().createItem('out.gif', creator=user, folder=outputFolder)
 
         job = docker_run.delay(
             'photomorph:latest', container_args=[
                 GirderFolderIdToVolume(folder['_id'], folder_name='input'),
-                outdir
+                '--mpeg', mpegOut,
+                '--gif', gifOut
             ], girder_job_title='Photomorph: %s' % folder['name'],
             girder_result_hooks=[
-                GirderUploadVolumePathToItem(outdir, outputItem['_id'], upload_kwargs={
+                GirderUploadVolumePathToItem(mpegOut, outputMpeg['_id'], upload_kwargs={
+                    'reference': json.dumps({
+                        'photomorph': True,
+                        'input_folder': str(folder['_id']),
+                    })
+                }),
+                GirderUploadVolumePathToItem(gifOut, outputGif['_id'], upload_kwargs={
                     'reference': json.dumps({
                         'photomorph': True,
                         'input_folder': str(folder['_id']),
@@ -72,12 +98,11 @@ class Photomorph(Resource):
                 })
             ]).job
 
-        outputItem['isPhotomorph'] = True
-        outputItem['photomorphJobId'] = job['_id']
-        Item().save(outputItem)
-
         job['photomorphInputFolderId'] = folder['_id']
-        job['photomorphOutputItemId'] = outputItem['_id']
+        job['photomorphOutputItems'] = {
+            'mpeg': outputMpeg['_id'],
+            'gif': outputGif['_id']
+        }
         return Job().save(job)
 
 class Study(Resource):
@@ -200,7 +225,8 @@ def load(info):
     Item().exposeFields(level=AccessType.READ, fields={'isSeries', 'isPhotomorph'})
 
     Job().exposeFields(level=AccessType.READ, fields={
-        'photomorphInputFolderId', 'photomorphOutputItemId'
+        'photomorphInputFolderId', 'photomorphOutputItems'
     })
 
+    events.bind('model.file.finalizeUpload.after', info['name'], _handleUpload)
     events.bind('model.item.remove', info['name'], _itemDeleted)
