@@ -69,4 +69,6 @@ export default {
   height 256px
   background-color #000
 
+  img
+    -webkit-user-drag none
 </style>
