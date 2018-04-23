@@ -89,7 +89,7 @@ export default {
     draggableOpts: {
       ghostClass: 'g-drag-ghost',
       animation: 80,
-    }
+    },
   }),
   computed: {
     dropzoneMessage() {

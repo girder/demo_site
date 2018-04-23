@@ -2,15 +2,16 @@ import datetime
 import json
 import os
 
-from girder import events
+from girder import events, logger
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute
 from girder.api.rest import Resource, filtermodel
-from girder.constants import AccessType
+from girder.constants import AccessType, SortDir
 from girder.models.collection import Collection
 from girder.models.folder import Folder
 from girder.models.item import Item
 from girder.plugins.jobs.models.job import Job
+from girder.plugins.thumbnails.worker import createThumbnail
 from girder.utility import setting_utilities
 from girder.utility.server import staticFile
 from girder.utility.plugin_utilities import registerPluginWebroot
@@ -32,10 +33,24 @@ def _handleUpload(event):
     except (TypeError, ValueError):
         return
 
-    if isinstance(reference, dict) and 'photomorphOrdinal' in reference:
+    if not isinstance(reference, dict) or 'photomorph' not in reference:
+        return
+
+    if 'photomorphOrdinal' in reference:
         item = Item().load(file['itemId'], force=True, exc=True)
         item['name'] = '%05d_%s' % (reference['photomorphOrdinal'], item['name'])
         Item().save(item)
+
+        try:
+            createThumbnail(
+                width=128, height=128, crop=True, fileId=file['_id'], attachToType='item',
+                attachToId=item['_id'])
+        except Exception:
+            logger.exception('Failure during photomorph thumbnailing')
+    elif 'resultType' in reference:
+        photomorph = Folder().load(reference['folderId'], force=True, exc=True)
+        photomorph['photomorphOutputItems'][reference['resultType']] = file['_id']
+        Folder().save(photomorph)
 
 
 class Photomorph(Resource):
@@ -43,8 +58,25 @@ class Photomorph(Resource):
         super(Photomorph, self).__init__()
         self.resourceName = 'photomorph'
 
+        self.route('GET', (), self.listPhotomorphs)
         self.route('POST', (), self.createPhotomorph)
         self.route('POST', (':id', 'process'), self.runPhotomorph)
+
+    @access.user
+    @filtermodel(Folder)
+    @autoDescribeRoute(
+        Description('List photomorphs.')
+        .pagingParams(defaultSort='created', defaultSortDir=SortDir.DESCENDING)
+    )
+    def listPhotomorphs(self, limit, offset, sort):
+        user = self.getCurrentUser()
+        # Right now just find photomorphs for the current user. TODO support shared ones?
+        cursor = Folder().find({
+            'isPhotomorph': True,
+            'parentId': user['_id']
+        }, sort=sort)
+        return Folder().filterResultsByPermission(
+            cursor, user, level=AccessType.READ, limit=limit, offset=offset)
 
     @access.user
     @filtermodel(Folder)
@@ -57,7 +89,12 @@ class Photomorph(Resource):
         name = 'Photomorph %s' % datetime.datetime.utcnow()
         folder = Folder().createFolder(
             user, name=name, parentType='user', public=False, creator=user)
-        return Folder().createFolder(folder, name='_input', creator=user)
+        input = Folder().createFolder(folder, name='_input', creator=user)
+
+        folder['isPhotomorph'] = True
+        folder['photomorphInputFolderId'] = input['_id']
+
+        return input
 
     @access.user
     @filtermodel(Job)
@@ -77,9 +114,12 @@ class Photomorph(Resource):
         outputMpeg = Item().createItem('out.mpeg', creator=user, folder=outputFolder)
         outputGif = Item().createItem('out.gif', creator=user, folder=outputFolder)
 
+        parent['photomorphOutputFolderId'] = outputFolder['_id']
+        parent['photomorphOutputItems'] = {}
+
         job = docker_run.delay(
             'photomorph:latest', container_args=[
-                GirderFolderIdToVolume(folder['_id'], folder_name='input'),
+                '--input', GirderFolderIdToVolume(folder['_id'], folder_name='_input'),
                 '--mpeg', mpegOut,
                 '--gif', gifOut
             ], girder_job_title='Photomorph: %s' % folder['name'],
@@ -87,22 +127,20 @@ class Photomorph(Resource):
                 GirderUploadVolumePathToItem(mpegOut, outputMpeg['_id'], upload_kwargs={
                     'reference': json.dumps({
                         'photomorph': True,
-                        'input_folder': str(folder['_id']),
+                        'folderId': str(folder['_id']),
+                        'resultType': 'mpeg'
                     })
                 }),
                 GirderUploadVolumePathToItem(gifOut, outputGif['_id'], upload_kwargs={
                     'reference': json.dumps({
                         'photomorph': True,
-                        'input_folder': str(folder['_id']),
+                        'folderId': str(folder['_id']),
+                        'resultType': 'gif'
                     })
                 })
             ]).job
 
-        job['photomorphInputFolderId'] = folder['_id']
-        job['photomorphOutputItems'] = {
-            'mpeg': outputMpeg['_id'],
-            'gif': outputGif['_id']
-        }
+        job['photomorphId'] = parent['_id']
         return Job().save(job)
 
 class Study(Resource):
@@ -218,15 +256,12 @@ def load(info):
     info['apiRoot'].photomorph = Photomorph()
 
     Folder().ensureIndex(('isStudy', {'sparse': True}))
+    Folder().ensureIndex(('isPhotomorph', {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
-        'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality'})
-
-    Item().ensureIndex(('isPhotomorph', {'sparse': True}))
+        'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality',
+        'isPhotomorph', 'photomorphInputFolderId', 'photomorphOutputItems'})
     Item().exposeFields(level=AccessType.READ, fields={'isSeries', 'isPhotomorph'})
-
-    Job().exposeFields(level=AccessType.READ, fields={
-        'photomorphInputFolderId', 'photomorphOutputItems'
-    })
+    Job().exposeFields(level=AccessType.READ, fields={'photomorphId'})
 
     events.bind('model.file.finalizeUpload.after', info['name'], _handleUpload)
     events.bind('model.item.remove', info['name'], _itemDeleted)

@@ -5,7 +5,7 @@ upload(:multiple="multiple", :error-message="errorMessage", :uploading="uploadin
 
 <script>
 import { mapActions, mapState } from 'vuex';
-import rest, { formEncode } from '@/rest';
+import rest from '@/rest';
 import { uploadFile, resumeUpload } from '@/utils/upload';
 import Upload from '../views/Upload';
 
@@ -27,7 +27,7 @@ export default {
     files() {
       return this.$refs.view.files;
     },
-    ...mapState('auth', ['user'])
+    ...mapState('auth', ['user']),
   },
   methods: {
     async createUploadFolder() {
@@ -74,8 +74,9 @@ export default {
                 progress,
                 params: {
                   reference: JSON.stringify({
-                    photomorphOrdinal: i
-                  })
+                    photomorph: true,
+                    photomorphOrdinal: i,
+                  }),
                 },
               });
             }
