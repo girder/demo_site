@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import six
 
 from girder import events, logger
 from girder.api import access
@@ -8,6 +9,7 @@ from girder.api.describe import Description, autoDescribeRoute
 from girder.api.rest import Resource, filtermodel
 from girder.constants import AccessType, SortDir
 from girder.models.collection import Collection
+from girder.models.file import File
 from girder.models.folder import Folder
 from girder.models.item import Item
 from girder.plugins.jobs.models.job import Job
@@ -19,10 +21,22 @@ from girder_worker.docker.tasks import docker_run
 from girder_worker.docker.transforms import VolumePath
 from girder_worker.docker.transforms.girder import (
     GirderFolderIdToVolume, GirderUploadVolumePathToItem)
+from PIL import Image
 
 
 class PluginSettings(object):
     STUDIES_COLL_ID = 'stroke_ct.studies_collection_id'
+
+
+def _extractDate(file):
+    with File().open(file) as fd:
+        data = fd.read()
+
+        try:
+            img = Image.open(six.BytesIO(data))
+            return img._getexif().get(36867)  # EXIF field DateTimeOriginal
+        except Exception:
+            return None
 
 
 def _handleUpload(event):
@@ -38,7 +52,10 @@ def _handleUpload(event):
 
     if 'photomorphOrdinal' in reference:
         item = Item().load(file['itemId'], force=True, exc=True)
+        item['originalName'] = item['name']
         item['name'] = '%05d_%s' % (reference['photomorphOrdinal'], item['name'])
+        item['photomorphTakenDate'] = _extractDate(file)
+
         Item().save(item)
 
         try:
@@ -47,6 +64,7 @@ def _handleUpload(event):
                 attachToId=item['_id'])
         except Exception:
             logger.exception('Failure during photomorph thumbnailing')
+
     elif 'resultType' in reference:
         photomorph = Folder().load(reference['folderId'], force=True, exc=True)
         photomorph['photomorphOutputItems'][reference['resultType']] = file['_id']
@@ -75,8 +93,8 @@ class Photomorph(Resource):
             'isPhotomorph': True,
             'parentId': user['_id']
         }, sort=sort)
-        return Folder().filterResultsByPermission(
-            cursor, user, level=AccessType.READ, limit=limit, offset=offset)
+        return list(Folder().filterResultsByPermission(
+            cursor, user, level=AccessType.READ, limit=limit, offset=offset))
 
     @access.user
     @filtermodel(Folder)
@@ -93,6 +111,7 @@ class Photomorph(Resource):
 
         folder['isPhotomorph'] = True
         folder['photomorphInputFolderId'] = input['_id']
+        Folder().save(folder)
 
         return input
 
@@ -139,6 +158,9 @@ class Photomorph(Resource):
                     })
                 })
             ]).job
+
+        parent['photomorphJobId'] = job['_id']
+        Folder().save(parent)
 
         job['photomorphId'] = parent['_id']
         return Job().save(job)
@@ -258,9 +280,10 @@ def load(info):
     Folder().ensureIndex(('isStudy', {'sparse': True}))
     Folder().ensureIndex(('isPhotomorph', {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
-        'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality',
+        'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality', 'photomorphJobId',
         'isPhotomorph', 'photomorphInputFolderId', 'photomorphOutputItems'})
-    Item().exposeFields(level=AccessType.READ, fields={'isSeries', 'isPhotomorph'})
+    Item().exposeFields(level=AccessType.READ, fields={
+        'isSeries', 'isPhotomorph', 'originalName', 'photomorphTakenDate'})
     Job().exposeFields(level=AccessType.READ, fields={'photomorphId'})
 
     events.bind('model.file.finalizeUpload.after', info['name'], _handleUpload)

@@ -7537,8 +7537,8 @@ vuedraggable@^2.16.0:
     sortablejs "^1.7.0"
 
 vuetify@^1.0.9:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-1.0.9.tgz#036f0c97aaba452ec4bdfb87c4c69448db46af74"
+  version "1.0.17"
+  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-1.0.17.tgz#646991024b327514b5fc50fb5c34e15451ad14b6"
 
 vuex-router-sync@^5.0.0:
   version "5.0.0"
