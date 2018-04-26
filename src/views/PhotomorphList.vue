@@ -50,17 +50,23 @@ v-app(dark)
                 span(slot="activator" ) {{ dateformat(props.item.created, 'mmm d, yyyy') }}
                 span {{ props.item.created }}
             td.text-xs-right
-              v-btn(icon, flat, @click.stop="")
-                v-icon visibility
+              a.mx-2(:href="videoUrl(fileId)", style="color: white;",
+                  v-for="fileId, type in props.item.photomorphOutputItems") {{ type }}
 
-    // Input item list
+    // Details view
     v-flex.mt-3(xs12, md10, offset-md1 v-if="selectedFolder")
       v-card
         v-card-title
           h3.headline {{ selectedFolder.name }}
         v-layout.py-3(justify-center, align-center, v-if="loadingChildren")
           v-progress-circular(indeterminate, color="primary")
+        hr
+        .headline.px-2.mt-2 Results
+        .result-item-container(v-for="fileId, type in selectedFolder.photomorphOutputItems")
+          video(v-if="type === 'mp4'", :src="videoUrl(fileId)", controls, loop)
+          img(v-if="type === 'gif'", :src="videoUrl(fileId)")
 
+        .headline.px-2.mt-2 Input images
         .input-item-container.px-2.py-2(v-for="item in inputItems", :key="item._id")
           v-layout(row, align-center)
             div #[img(:src="thumbUrl(item)")]
@@ -109,7 +115,7 @@ export default {
       text: 'Date uploaded',
       value: 'created',
     }, {
-      text: 'Actions',
+      text: 'Results',
       sortable: false,
       align: 'right',
     }],
@@ -146,6 +152,9 @@ export default {
     },
     thumbUrl(item) {
       return `${getApiUrl()}/file/${item._thumbnails[0]}/download`;
+    },
+    videoUrl(fileId) {
+      return `${getApiUrl()}/file/${fileId}/download`;
     },
   },
 };

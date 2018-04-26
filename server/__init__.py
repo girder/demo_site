@@ -65,7 +65,7 @@ def _handleUpload(event):
         except Exception:
             logger.exception('Failure during photomorph thumbnailing')
 
-    elif 'resultType' in reference:
+    elif reference.get('photomorph') and 'resultType' in reference:
         photomorph = Folder().load(reference['folderId'], force=True, exc=True)
         photomorph['photomorphOutputItems'][reference['resultType']] = file['_id']
         Folder().save(photomorph)
@@ -124,13 +124,13 @@ class Photomorph(Resource):
     )
     def runPhotomorph(self, folder):
         user = self.getCurrentUser()
-        mpegOut = VolumePath('__output__/out.mpeg')
-        gifOut = VolumePath('__output__/out.gif')
+        mp4Out = VolumePath('__output__.mp4')
+        gifOut = VolumePath('__output__.gif')
 
         parent = Folder().load(folder['parentId'], level=AccessType.WRITE, exc=True, user=user)
         outputFolder = Folder().createFolder(
             parent, '_output', public=False, creator=user, reuseExisting=True)
-        outputMpeg = Item().createItem('out.mpeg', creator=user, folder=outputFolder)
+        outputMp4 = Item().createItem('out.mp4', creator=user, folder=outputFolder)
         outputGif = Item().createItem('out.gif', creator=user, folder=outputFolder)
 
         parent['photomorphOutputFolderId'] = outputFolder['_id']
@@ -138,26 +138,26 @@ class Photomorph(Resource):
 
         job = docker_run.delay(
             'photomorph:latest', container_args=[
-                '--input', GirderFolderIdToVolume(folder['_id'], folder_name='_input'),
-                '--mpeg', mpegOut,
-                '--gif', gifOut
+                '--mp4-out', mp4Out,
+                '--gif-out', gifOut,
+                GirderFolderIdToVolume(folder['_id'], folder_name='_input')
             ], girder_job_title='Photomorph: %s' % folder['name'],
             girder_result_hooks=[
-                GirderUploadVolumePathToItem(mpegOut, outputMpeg['_id'], upload_kwargs={
+                GirderUploadVolumePathToItem(mp4Out, outputMp4['_id'], upload_kwargs={
                     'reference': json.dumps({
                         'photomorph': True,
-                        'folderId': str(folder['_id']),
-                        'resultType': 'mpeg'
+                        'folderId': str(parent['_id']),
+                        'resultType': 'mp4'
                     })
                 }),
                 GirderUploadVolumePathToItem(gifOut, outputGif['_id'], upload_kwargs={
                     'reference': json.dumps({
                         'photomorph': True,
-                        'folderId': str(folder['_id']),
+                        'folderId': str(parent['_id']),
                         'resultType': 'gif'
                     })
                 })
-            ]).job
+            ], pull_image=False).job  # TODO pull the image for real.
 
         parent['photomorphJobId'] = job['_id']
         Folder().save(parent)
