@@ -165,6 +165,7 @@ class Photomorph(Resource):
         job['photomorphId'] = parent['_id']
         return Job().save(job)
 
+
 class Study(Resource):
     def __init__(self):
         super(Study, self).__init__()
