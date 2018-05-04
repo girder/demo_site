@@ -159,7 +159,7 @@ export default {
       return `${getApiUrl()}/file/${item._thumbnails[0]}/download`;
     },
     videoUrl(fileId) {
-      return `${getApiUrl()}/file/${fileId}/download`;
+      return `${getApiUrl()}/file/${fileId}/download?contentDisposition=inline`;
     },
   },
 };
