@@ -11,10 +11,13 @@
   .pb-2.px-3(v-show="files.length && !errorMessage")
     v-subheader(v-show="!uploading") {{ statusMessage }}
 
+    v-text-field(v-if="!uploading", v-model="folderName", label="Name your timelapse sequence",
+        hint="Optional")
+
     v-btn(v-if="!uploading", color="warning", @click="files = []")
       v-icon.mr-1 close
       | Clear all
-    v-btn(v-if="!uploading", color="success", @click="$emit('start')")
+    v-btn(v-if="!uploading", color="success", @click="$emit('start', folderName)")
       v-icon.mr-1 play_arrow
       | Start upload
 
@@ -83,6 +86,7 @@ export default {
   },
   data: () => ({
     files: [],
+    folderName: '',
     dragover: false,
     dropzoneClass: null,
     ResourceIcons,

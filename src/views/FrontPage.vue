@@ -8,7 +8,7 @@ v-app
         v-flex(xs12, sm8)
           .my-4.display-2 Algorithm services:
           ul.display-1
-           li.ml-5.my-3 #[router-link(to="/photomorph") Timelapse video generation]
+           li.ml-5.my-3 #[router-link(to="/timelapse") Timelapse video generation]
            li.ml-5.my-3 #[router-link(to="/ct_terms") CT Visualization]
         v-layout(row, justify-center)
           v-flex(xs12, md8)

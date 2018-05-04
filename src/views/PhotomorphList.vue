@@ -4,7 +4,7 @@ v-app(dark)
     v-toolbar-title
       img.kw-logo(src="@/assets/KWLogo.svg")
     v-spacer
-    .headline Timelapse photo morph
+    .headline Timelapse generation
   v-content
     v-flex(xs12, md10, offset-md1)
       v-layout(row, wrap)
@@ -37,10 +37,10 @@ v-app(dark)
 
     // Folder list
     v-flex(xs12, md10, offset-md1)
-      v-data-table(no-data-text="No videos found.", no-results-text="No matching videos.",
+      v-data-table(no-data-text="No timelapses found.", no-results-text="No matching timelapses.",
           :items="folders", :headers="headers", :loading="loading", :search="search",
           :custom-filter="customFilter", :filter="filter", :rows-per-page-items="rowsPerPageItems",
-          rows-per-page-text="Videos per page:")
+          rows-per-page-text="Results per page:")
         template(slot="items", slot-scope="props")
           tr.photomorph-row(@click="$emit('select', props.item)",
               :active="selectedFolder && selectedFolder._id === props.item._id")

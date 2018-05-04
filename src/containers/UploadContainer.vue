@@ -5,7 +5,7 @@ upload(:multiple="multiple", :error-message="errorMessage", :uploading="uploadin
 
 <script>
 import { mapActions, mapState } from 'vuex';
-import rest from '@/rest';
+import rest, { formEncode } from '@/rest';
 import { uploadFile, resumeUpload } from '@/utils/upload';
 import Upload from '../views/Upload';
 
@@ -30,19 +30,19 @@ export default {
     ...mapState('auth', ['user']),
   },
   methods: {
-    async createUploadFolder() {
-      return (await rest.post('photomorph')).data;
+    async createUploadFolder(name) {
+      return (await rest.post('photomorph', formEncode({ name }))).data;
     },
     async processUpload() {
       return (await rest.post(`photomorph/${this.folder._id}/process`)).data;
     },
-    async start() {
+    async start(folderName) {
       this.uploading = true;
       this.errorMessage = null;
 
       if (!this.folder) {
         try {
-          this.folder = await this.createUploadFolder();
+          this.folder = await this.createUploadFolder(folderName);
         } catch (error) {
           this.errorMessage = error.response.data.message;
           this.uploading = false;

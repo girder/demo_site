@@ -99,12 +99,13 @@ class Photomorph(Resource):
     @access.user
     @filtermodel(Folder)
     @autoDescribeRoute(
-        Description('Create a new photomorph.')
+        Description('Create a new timelapse sequence.')
+        .param('name', 'Name for the sequence.', required=False, strip=True)
         .notes('Returns the folder into which input images should be uploaded.')
     )
-    def createPhotomorph(self):
+    def createPhotomorph(self, name):
         user = self.getCurrentUser()
-        name = 'Photomorph %s' % datetime.datetime.utcnow()
+        name = name or 'Timelapse %s' % datetime.datetime.utcnow()
         folder = Folder().createFolder(
             user, name=name, parentType='user', public=False, creator=user)
         input = Folder().createFolder(folder, name='_input', creator=user)

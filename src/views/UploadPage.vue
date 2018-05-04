@@ -11,7 +11,7 @@ export default {
   components: { UploadContainer },
   methods: {
     uploadComplete() {
-      this.$router.push('/photomorphs');
+      this.$router.push('/timelapse');
     },
   },
 };

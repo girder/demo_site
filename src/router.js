@@ -24,7 +24,7 @@ export default new Router({
     path: '/upload',
     component: UploadPage,
   }, {
-    path: '/photomorphs',
+    path: '/timelapse',
     component: PhotomorphListContainer,
   }],
 });
