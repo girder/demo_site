@@ -275,8 +275,8 @@ def load(info):
         'tools.staticdir.dir': os.path.join(info['pluginRootDir'], 'dist', 'stroke_ct_static')
     }
 
-    info['apiRoot'].study = Study()
-    info['apiRoot'].series = Series()
+    # info['apiRoot'].study = Study()
+    # info['apiRoot'].series = Series()
     info['apiRoot'].photomorph = Photomorph()
 
     Folder().ensureIndex(('isStudy', {'sparse': True}))
