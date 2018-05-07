@@ -57,7 +57,13 @@ v-app(dark)
     v-flex.mt-3(xs12, md10, offset-md1 v-if="selectedFolder")
       v-card
         v-card-title
-          h3.headline {{ selectedFolder.name }}
+          v-text-field(v-model="selectedFolder.name", v-if="editingName", append-icon="save",
+                autofocus, :append-icon-cb="saveFolderName")
+          h3.headline(v-else)
+            span {{ selectedFolder.name }}
+            v-btn(icon, @click="editingName = true", v-if="!editingName")
+              v-icon edit
+
         v-layout.py-3(justify-center, align-center, v-if="loadingChildren")
           v-progress-circular(indeterminate, color="primary")
         hr
@@ -119,6 +125,7 @@ export default {
       sortable: false,
       align: 'right',
     }],
+    editingName: false,
     rowsPerPageItems: [10, 25, 50, { text: 'All', value: -1 }],
     startDate: null,
     endDate: null,
@@ -131,6 +138,11 @@ export default {
       rowsPerPage: -1,
     },
   }),
+  watch: {
+    selectedFolder() {
+      this.editingName = false;
+    },
+  },
   methods: {
     dateformat,
     customFilter(items, search, filter) {
@@ -160,6 +172,14 @@ export default {
     },
     videoUrl(fileId) {
       return `${getApiUrl()}/file/${fileId}/download?contentDisposition=inline`;
+    },
+    saveFolderName() {
+      this.$emit('saveFolder', {
+        fields: {
+          name: this.selectedFolder.name,
+        },
+        folder: this.selectedFolder,
+      });
     },
   },
 };
