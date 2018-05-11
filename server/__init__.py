@@ -1,4 +1,5 @@
 import datetime
+import itertools
 import json
 import os
 import six
@@ -22,6 +23,23 @@ from girder_worker.docker.transforms import VolumePath
 from girder_worker.docker.transforms.girder import (
     GirderFolderIdToVolume, GirderUploadVolumePathToItem)
 from PIL import Image
+
+
+# [[x1, y2], [x2, y2]] in pixel coordinates
+_MASK_RECT_SCHEMA = {
+    'type': 'array',
+    'maxItems': 2,
+    'minItems': 2,
+    'items': {
+        'type': 'array',
+        'maxItems': 2,
+        'minItems': 2,
+        'items': {
+            'type': 'integer',
+            'minimum': 0
+        }
+    }
+}
 
 
 class PluginSettings(object):
@@ -122,8 +140,9 @@ class Photomorph(Resource):
         Description('Run photomorph on a folder of images.')
         .modelParam('id', 'The ID of the folder containing the input images.',
                     model=Folder, level=AccessType.READ)
-    )
-    def runPhotomorph(self, folder):
+        .jsonParam('maskRect', 'Bounding box of the rectangle as [[x1, y1], [x2, y2]].',
+                   schema=_MASK_RECT_SCHEMA))
+    def runPhotomorph(self, folder, maskRect):
         user = self.getCurrentUser()
         mp4Out = VolumePath('__output__.mp4')
         gifOut = VolumePath('__output__.gif')
@@ -136,13 +155,15 @@ class Photomorph(Resource):
 
         parent['photomorphOutputFolderId'] = outputFolder['_id']
         parent['photomorphOutputItems'] = {}
+        parent['photomorphMaskRect'] = maskRect
 
         job = docker_run.delay(
             'photomorph:latest', container_args=[
                 '--mp4-out', mp4Out,
                 '--gif-out', gifOut,
+                '--mask-rect', ','.join(str(i) for i in itertools.chain(*maskRect)),
                 GirderFolderIdToVolume(folder['_id'], folder_name='_input')
-            ], girder_job_title='Photomorph: %s' % folder['name'],
+            ], girder_job_title='Photomorph: %s' % parent['name'],
             girder_result_hooks=[
                 GirderUploadVolumePathToItem(mp4Out, outputMp4['_id'], upload_kwargs={
                     'reference': json.dumps({
@@ -283,7 +304,8 @@ def load(info):
     Folder().ensureIndex(('isPhotomorph', {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
         'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality', 'photomorphJobId',
-        'isPhotomorph', 'photomorphInputFolderId', 'photomorphOutputItems'})
+        'isPhotomorph', 'photomorphInputFolderId', 'photomorphOutputItems',
+        'photomorphMaskRect'})
     Item().exposeFields(level=AccessType.READ, fields={
         'isSeries', 'isPhotomorph', 'originalName', 'photomorphTakenDate'})
     Job().exposeFields(level=AccessType.READ, fields={'photomorphId'})

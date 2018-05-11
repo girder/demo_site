@@ -1,5 +1,5 @@
 <template lang="pug">
-glance-container(ref="wrapped", :item-id="this.$route.params.id")
+glance-container(ref="wrapped", :item-id="$route.params.id")
 </template>
 <script>
 import { fetchingRoute } from '@/utils/mixins';

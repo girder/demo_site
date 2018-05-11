@@ -28,7 +28,7 @@ export default new Router({
     path: '/timelapse',
     component: PhotomorphListContainer,
   }, {
-    path: '/select_mask/:folderId/file/:fileId',
+    path: '/select_mask/:folderId/item/:itemId',
     component: SelectMask,
   }],
 });

@@ -7,7 +7,7 @@ v-app
     .image-container(:style="containerStyle")
       img(:src="imageUrl", @load="onImageLoad", :style="containerStyle")
       canvas(@click="onCanvasClick", :width="containerWidth", :height="containerHeight")
-    v-btn(color="success", large, :disabled="!startEnabled")
+    v-btn(color="success", large, :disabled="!startEnabled", @click="$emit('start', { imageRect })")
       v-icon.mr-2 play_arrow
       | Start processing
 </template>
@@ -31,8 +31,8 @@ export default {
     },
     imageRect() {
       return this.drawState.map(([x, y]) => [
-        this.imageWidth * x / this.containerWidth,
-        this.imageHeight * y / this.containerHeight
+        Math.round((this.imageWidth * x) / this.containerWidth),
+        Math.round((this.imageHeight * y) / this.containerHeight),
       ]);
     },
     containerWidth() {

@@ -11,7 +11,7 @@ export default {
   components: { UploadContainer },
   methods: {
     uploadComplete({ folder, results }) {
-      this.$router.push(`/select_mask/${folder._id}/file/${results[0]._id}`);
+      this.$router.push(`/select_mask/${folder._id}/item/${results[0].itemId}`);
     },
   },
 };

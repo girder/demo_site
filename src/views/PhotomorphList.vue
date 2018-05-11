@@ -67,7 +67,13 @@ v-app(dark)
         v-layout.py-3(justify-center, align-center, v-if="loadingChildren")
           v-progress-circular(indeterminate, color="primary")
         hr
-        .headline.px-2.mt-2 Results
+        .headline.px-2.mt-2
+          | Results
+          v-tooltip(right)
+            v-btn(icon, slot="activator",
+    :to="`/select_mask/${selectedFolder.photomorphInputFolderId}/item/${inputItems[0]._id}`")
+              v-icon replay
+            span Re-run processing
         .result-item-container(v-for="fileId, type in selectedFolder.photomorphOutputItems")
           video(v-if="type === 'mp4'", :src="videoUrl(fileId)", controls, loop)
           img(v-if="type === 'gif'", :src="videoUrl(fileId)")

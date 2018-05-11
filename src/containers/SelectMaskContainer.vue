@@ -3,7 +3,7 @@ select-mask(@start="processUpload", :image-url="imageUrl")
 </template>
 
 <script>
-import rest, { getApiUrl } from '@/rest';
+import rest, { formEncode, getApiUrl } from '@/rest';
 import SelectMask from '@/views/SelectMask';
 
 export default {
@@ -13,21 +13,26 @@ export default {
       type: String,
       required: true,
     },
-    fileId: {
+    itemId: {
       type: String,
-      required: true,
+      default: null,
     },
   },
   computed: {
     imageUrl() {
-      return `${getApiUrl()}/file/${this.fileId}/download`;
+      return `${getApiUrl()}/item/${this.itemId}/download`;
     },
   },
   methods: {
-    async processUpload() {
-      const job = (await rest.post(`photomorph/${this.folder._id}/process`)).data;
+    async processUpload({ imageRect }) {
+      const job = (await rest.post(`photomorph/${this.folderId}/process`, formEncode({
+        maskRect: JSON.stringify(imageRect),
+      }))).data;
 
-      // do something
+      this.$emit('started', {
+        folderId: this.folderId,
+        job,
+      });
     },
   },
 };
