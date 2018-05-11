@@ -33,9 +33,6 @@ export default {
     async createUploadFolder(name) {
       return (await rest.post('photomorph', formEncode({ name }))).data;
     },
-    async processUpload() {
-      return (await rest.post(`photomorph/${this.folder._id}/process`)).data;
-    },
     async start(folderName) {
       this.uploading = true;
       this.errorMessage = null;
@@ -97,8 +94,6 @@ export default {
         }
       }
 
-      const job = await this.processUpload(this.folder);
-
       this.uploading = false;
       this.showToast({
         text: 'Upload complete',
@@ -106,11 +101,11 @@ export default {
         icon: 'check_circled',
         ms: 3000,
       });
-      this.folder = null;
       this.$emit('done', {
-        job,
         results,
+        folder: this.folder,
       });
+      this.folder = null;
     },
     ...mapActions('toast', ['showToast']),
   },

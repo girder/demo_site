@@ -10,8 +10,8 @@ import UploadContainer from '@/containers/UploadContainer';
 export default {
   components: { UploadContainer },
   methods: {
-    uploadComplete() {
-      this.$router.push('/timelapse');
+    uploadComplete({ folder, results }) {
+      this.$router.push(`/select_mask/${folder._id}/file/${results[0]._id}`);
     },
   },
 };

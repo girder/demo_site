@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Router from 'vue-router';
 import Glance from '@/views/Glance';
 // import GlanceItem from '@/routes/GlanceItem';
+import SelectMask from '@/routes/SelectMask';
 import CTTerms from '@/views/CTTerms';
 import FrontPage from '@/views/FrontPage';
 import PhotomorphListContainer from '@/containers/PhotomorphListContainer';
@@ -26,5 +27,8 @@ export default new Router({
   }, {
     path: '/timelapse',
     component: PhotomorphListContainer,
+  }, {
+    path: '/select_mask/:folderId/file/:fileId',
+    component: SelectMask,
   }],
 });
