@@ -1,7 +1,7 @@
 <template lang="pug">
 photomorph-list(:folders="folders", :selected-folder="selectedFolder", :loading="fetchingList",
     :loading-children="fetchingChildren", @select="selectFolder", :input-items="inputItems",
-    @saveFolder="saveFolder")
+    @saveFolder="saveFolder", @refreshList="fetch")
 </template>
 
 <script>

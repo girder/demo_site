@@ -29,11 +29,17 @@ v-app(dark)
                 v-date-picker(v-model="endDate", @change="$refs.endDateMenuRef.save(endDate)",
                     :min="startDate", no-title)
 
-        // Upload button and login message
+        // Upload button and refresh button
         v-flex.text-xs-right(xs12, md6)
-          v-btn.my-4(large, color="success", to="upload")
-            v-icon.mr-2 file_upload
-            | Upload
+          v-layout(column)
+            v-flex
+              v-btn.my-4(large, color="success", to="upload")
+                v-icon.mr-2 file_upload
+                | Upload
+            v-tooltip(bottom)
+              v-btn(icon, slot="activator", @click="$emit('refreshList')")
+                v-icon replay
+              | Refresh list
 
     // Folder list
     v-flex(xs12, md10, offset-md1)
@@ -72,7 +78,7 @@ v-app(dark)
           v-tooltip(right)
             v-btn(icon, slot="activator",
     :to="`/select_mask/${selectedFolder.photomorphInputFolderId}/item/${inputItems[0]._id}`")
-              v-icon replay
+              v-icon play_circle_outline
             span Re-run processing
         .result-item-container(v-for="fileId, type in selectedFolder.photomorphOutputItems")
           video(v-if="type === 'mp4'", :src="videoUrl(fileId)", controls, loop)
