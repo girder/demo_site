@@ -72,6 +72,8 @@ v-app(dark)
             span {{ selectedFolder.name }}
             v-btn(icon, @click="editingName = true", v-if="!editingName")
               v-icon edit
+            v-btn(icon, @click="deleteFolder", v-if="!editingName")
+              v-icon delete
 
         v-layout.py-3(justify-center, align-center, v-if="loadingChildren")
           v-progress-circular(indeterminate, color="primary")
@@ -101,6 +103,7 @@ v-app(dark)
 <script>
 import { getApiUrl } from '@/rest';
 import dateformat from 'dateformat';
+import confirm from '@/utils/confirm';
 import { sizeFormatter } from '@/utils/mixins';
 
 
@@ -232,6 +235,15 @@ export default {
         },
         folder: this.selectedFolder,
       });
+    },
+    async deleteFolder() {
+      const ok = await confirm({
+        markdown: 'Are you sure you want to delete all data for your timelapse series ' +
+        `**${this.selectedFolder.name}**?`,
+      });
+      if (ok) {
+        this.$emit('deleteFolder', this.selectedFolder);
+      }
     },
   },
 };
