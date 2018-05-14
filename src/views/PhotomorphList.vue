@@ -78,7 +78,7 @@ v-app(dark)
         hr
         .headline.px-2.mt-2
           | Results
-          v-tooltip(right)
+          v-tooltip(right, v-if="inputItems.length")
             v-btn(icon, slot="activator",
     :to="`/select_mask/${selectedFolder.photomorphInputFolderId}/item/${inputItems[0]._id}`")
               v-icon play_circle_outline
@@ -225,6 +225,7 @@ export default {
       return `${getApiUrl()}/file/${fileId}/download?contentDisposition=inline`;
     },
     saveFolderName() {
+      this.editingName = false;
       this.$emit('saveFolder', {
         fields: {
           name: this.selectedFolder.name,
