@@ -13,6 +13,7 @@ from girder.models.collection import Collection
 from girder.models.file import File
 from girder.models.folder import Folder
 from girder.models.item import Item
+from girder.plugins.jobs.constants import JobStatus
 from girder.plugins.jobs.models.job import Job
 from girder.plugins.thumbnails.worker import createThumbnail
 from girder.utility import setting_utilities
@@ -156,6 +157,7 @@ class Photomorph(Resource):
         parent['photomorphOutputFolderId'] = outputFolder['_id']
         parent['photomorphOutputItems'] = {}
         parent['photomorphMaskRect'] = maskRect
+        parent['photomorphJobStatus'] = JobStatus.QUEUED
 
         job = docker_run.delay(
             'photomorph:latest', container_args=[
@@ -281,6 +283,23 @@ def _itemDeleted(event):
             '$inc': {'nSeries': -1}
         }, multi=False)
 
+def _jobUpdated(event):
+    """
+    On job status updates of photomorph processing jobs, we write the status on the folder also.
+    """
+    job = event.info['job']
+    params = event.info['params']
+
+    if 'photomorphId' in job and params['status'] is not None:
+        Folder().update({
+            '_id': job['photomorphId']
+        }, {
+            '$set': {
+                'photomorphJobStatus': params['status']
+            }
+        }, multi=False)
+
+
 
 @setting_utilities.validator(PluginSettings.STUDIES_COLL_ID)
 def _validateStudiesColl(doc):
@@ -304,7 +323,7 @@ def load(info):
     Folder().ensureIndex(('isPhotomorph', {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
         'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality', 'photomorphJobId',
-        'isPhotomorph', 'photomorphInputFolderId', 'photomorphOutputItems',
+        'isPhotomorph', 'photomorphInputFolderId', 'photomorphOutputItems', 'photomorphJobStatus',
         'photomorphMaskRect'})
     Item().exposeFields(level=AccessType.READ, fields={
         'isSeries', 'isPhotomorph', 'originalName', 'photomorphTakenDate'})
@@ -312,3 +331,4 @@ def load(info):
 
     events.bind('model.file.finalizeUpload.after', info['name'], _handleUpload)
     events.bind('model.item.remove', info['name'], _itemDeleted)
+    events.bind('jobs.job.update', info['name'], _jobUpdated)

@@ -56,6 +56,9 @@ v-app(dark)
                 span(slot="activator" ) {{ dateformat(props.item.created, 'mmm d, yyyy') }}
                 span {{ props.item.created }}
             td.text-xs-right
+              v-icon(:class="jobStatusClass(props.item.photomorphJobStatus)",
+                  :color="jobStatusColor(props.item.photomorphJobStatus)")
+                | {{ jobStatusIcon(props.item.photomorphJobStatus) }}
               a.mx-2(:href="videoUrl(fileId)", style="color: white;",
                   v-for="fileId, type in props.item.photomorphOutputItems") {{ type }}
 
@@ -156,6 +159,42 @@ export default {
     },
   },
   methods: {
+    jobStatusClass(status) {
+      if (Number(status) === 2) {
+        return 'rotate';
+      }
+      return '';
+    },
+    jobStatusColor(status) {
+      switch (Number(status)) {
+        case 0:
+        case 1:
+          return 'warning';
+        case 2:
+          return 'primary';
+        case 3:
+          return 'success';
+        case 4:
+          return 'error';
+        default:
+          return 'warning';
+      }
+    },
+    jobStatusIcon(status) {
+      switch (Number(status)) {
+        case 0:
+        case 1:
+          return 'hourglass_empty';
+        case 2:
+          return 'cached';
+        case 3:
+          return 'done';
+        case 4:
+          return 'error';
+        default:
+          return 'report_problem';
+      }
+    },
     dateformat,
     customFilter(items, search, filter) {
       search = search.toString().toLowerCase().trim();
@@ -203,4 +242,13 @@ export default {
 
 .photomorph-row
   cursor pointer
+
+.rotate
+  animation rotate 1.5s linear infinite
+
+@keyframes rotate
+  from
+    transform rotate(360deg)
+  to
+    transform rotate(0deg)
 </style>
