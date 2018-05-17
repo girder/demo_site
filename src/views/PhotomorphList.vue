@@ -157,12 +157,12 @@ export default {
   }),
   computed: {
     outputItems() {
-      return _.flatten(_.toArray(_.mapValues(this.selectedFolder.photomorphOutputItems, (items, type) => {
-        return items.map((v) => ({
+      const vals = _.mapValues(this.selectedFolder.photomorphOutputItems, (items, type) =>
+        items.map(v => ({
           ...v,
-          type
-        }));
-      })));
+          type,
+        })));
+      return _.flatten(_.toArray(vals));
     },
   },
   watch: {
