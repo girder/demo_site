@@ -59,8 +59,6 @@ v-app(dark)
               v-icon(:class="jobStatusClass(props.item.photomorphJobStatus)",
                   :color="jobStatusColor(props.item.photomorphJobStatus)")
                 | {{ jobStatusIcon(props.item.photomorphJobStatus) }}
-              a.mx-2(:href="videoUrl(fileId)", style="color: white;",
-                  v-for="fileId, type in props.item.photomorphOutputItems") {{ type }}
 
     // Details view
     v-flex.mt-3(xs12, md10, offset-md1 v-if="selectedFolder")
@@ -85,9 +83,9 @@ v-app(dark)
     :to="`/select_mask/${selectedFolder.photomorphInputFolderId}/item/${inputItems[0]._id}`")
               v-icon play_circle_outline
             span Re-run processing
-        .result-item-container(v-for="fileId, type in selectedFolder.photomorphOutputItems")
-          video(v-if="type === 'mp4'", :src="videoUrl(fileId)", controls, loop)
-          img(v-if="type === 'gif'", :src="videoUrl(fileId)")
+        .result-item-container(v-for="item in outputItems")
+          img(v-if="item.type === 'gif'", :src="videoUrl(item.fileId)")
+          video(v-else, :src="videoUrl(item.fileId)", controls, loop)
 
         .headline.px-2.mt-2 Input images
         .input-item-container.px-2.py-2(v-for="item in inputItems", :key="item._id")
@@ -101,6 +99,7 @@ v-app(dark)
 </template>
 
 <script>
+import _ from 'lodash';
 import { getApiUrl } from '@/rest';
 import dateformat from 'dateformat';
 import confirm from '@/utils/confirm';
@@ -156,6 +155,16 @@ export default {
       rowsPerPage: -1,
     },
   }),
+  computed: {
+    outputItems() {
+      return _.flatten(_.toArray(_.mapValues(this.selectedFolder.photomorphOutputItems, (items, type) => {
+        return items.map((v) => ({
+          ...v,
+          type
+        }));
+      })));
+    },
+  },
   watch: {
     selectedFolder() {
       this.editingName = false;
