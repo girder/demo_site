@@ -11,15 +11,17 @@ __version__ = '0.1.0'
 @click.option('--mask-rect', type=click.STRING, help='image mask rectagle as "x1,y1,x2,y2"')
 @click.version_option(version=__version__, prog_name='Generate timelapse videos from images')
 def run(in_dir, mp4_out, gif_out, mask_rect):
-    files = [os.path.join(in_dir, f) for f in sorted(os.listdir(in_dir))]
+    # files = [os.path.join(in_dir, f) for f in sorted(os.listdir(in_dir))]
 
     # TODO Replace dummy code below with actual algorithm
     if mp4_out:
-        with open(mp4_out, 'wb') as out, open('/test.mp4', 'rb') as mp4:
+        os.mkdir(mp4_out)
+        with open(os.path.join(mp4_out, 'out.mp4'), 'wb') as out, open('/test.mp4', 'rb') as mp4:
             out.write(mp4.read())
 
     if gif_out:
-        with open(gif_out, 'wb') as out, open('/test.gif', 'rb') as gif:
+        os.mkdir(gif_out)
+        with open(os.path.join(gif_out, 'out.gif'), 'wb') as out, open('/test.gif', 'rb') as gif:
             out.write(gif.read())
 
 

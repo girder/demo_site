@@ -4,6 +4,7 @@ import json
 import os
 import six
 
+from bson.objectid import ObjectId
 from girder import events, logger
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute
@@ -22,7 +23,7 @@ from girder.utility.plugin_utilities import registerPluginWebroot
 from girder_worker.docker.tasks import docker_run
 from girder_worker.docker.transforms import VolumePath
 from girder_worker.docker.transforms.girder import (
-    GirderFolderIdToVolume, GirderUploadVolumePathToItem)
+    GirderFolderIdToVolume, GirderUploadVolumePathToFolder)
 from PIL import Image
 
 
@@ -85,9 +86,15 @@ def _handleUpload(event):
             logger.exception('Failure during photomorph thumbnailing')
 
     elif reference.get('photomorph') and 'resultType' in reference:
-        photomorph = Folder().load(reference['folderId'], force=True, exc=True)
-        photomorph['photomorphOutputItems'][reference['resultType']] = file['_id']
-        Folder().save(photomorph)
+        print('GOT AN UPLOAD', 'photomorphOutputItems.%s' % reference['resultType'])
+        Folder().update({'_id': ObjectId(reference['folderId'])}, {
+            '$push': {
+                'photomorphOutputItems.%s' % reference['resultType']: {
+                    'fileId': file['_id'],
+                    'name': file['name']
+                }
+            }
+        }, multi=False)
 
 
 class Photomorph(Resource):
@@ -145,19 +152,25 @@ class Photomorph(Resource):
                    schema=_MASK_RECT_SCHEMA))
     def runPhotomorph(self, folder, maskRect):
         user = self.getCurrentUser()
-        mp4Out = VolumePath('__output__.mp4')
-        gifOut = VolumePath('__output__.gif')
+        mp4Out = VolumePath('__output_mp4s__/')
+        gifOut = VolumePath('__output_gifs__/')
 
         parent = Folder().load(folder['parentId'], level=AccessType.WRITE, exc=True, user=user)
         outputFolder = Folder().createFolder(
             parent, '_output', public=False, creator=user, reuseExisting=True)
-        outputMp4 = Item().createItem('out.mp4', creator=user, folder=outputFolder)
-        outputGif = Item().createItem('out.gif', creator=user, folder=outputFolder)
+        outputMp4 = Folder().createFolder(
+            outputFolder, 'mp4s', public=False, creator=user, reuseExisting=True)
+        outputGif = Folder().createFolder(
+            outputFolder, 'gifs', public=False, creator=user, reuseExisting=True)
 
         parent['photomorphOutputFolderId'] = outputFolder['_id']
         parent['photomorphOutputItems'] = {}
         parent['photomorphMaskRect'] = maskRect
         parent['photomorphJobStatus'] = JobStatus.QUEUED
+        parent['photomorphOutputItems'] = {
+            'gif': [],
+            'mp4': []
+        }
 
         job = docker_run.delay(
             'photomorph:latest', container_args=[
@@ -165,16 +178,16 @@ class Photomorph(Resource):
                 '--gif-out', gifOut,
                 '--mask-rect', ','.join(str(i) for i in itertools.chain(*maskRect)),
                 GirderFolderIdToVolume(folder['_id'], folder_name='_input')
-            ], girder_job_title='Photomorph: %s' % parent['name'],
+            ], girder_job_title='Timelapse creation: %s' % parent['name'],
             girder_result_hooks=[
-                GirderUploadVolumePathToItem(mp4Out, outputMp4['_id'], upload_kwargs={
+                GirderUploadVolumePathToFolder(mp4Out, outputMp4['_id'], upload_kwargs={
                     'reference': json.dumps({
                         'photomorph': True,
                         'folderId': str(parent['_id']),
                         'resultType': 'mp4'
                     })
                 }),
-                GirderUploadVolumePathToItem(gifOut, outputGif['_id'], upload_kwargs={
+                GirderUploadVolumePathToFolder(gifOut, outputGif['_id'], upload_kwargs={
                     'reference': json.dumps({
                         'photomorph': True,
                         'folderId': str(parent['_id']),
