@@ -84,6 +84,7 @@ v-app(dark)
               v-icon play_circle_outline
             span Re-run processing
         .result-item-container(v-for="item in outputItems")
+          .body-2.mt-3 {{ item.name }}
           img(v-if="item.type === 'gif'", :src="videoUrl(item.fileId)")
           video(v-else, :src="videoUrl(item.fileId)", controls, loop)
 
