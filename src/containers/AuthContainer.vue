@@ -29,6 +29,8 @@ v-app
             v-tab-item(key="register")
               register-form(ref="registerForm", @register="doRegister",
                   :errors="registerErrors", :register-in-progress="registerInProgress")
+    hr.mt-4.mb-2
+    .text-xs-center &copy; Kitware, Inc.
 </template>
 
 <script>
