@@ -112,7 +112,7 @@ class Photomorph(Resource):
     @autoDescribeRoute(
         Description('Set the folder containing site-wide examples.')
         .modelParam('id', 'The ID of the folder containing the examples as items.',
-                    model=Folder)
+                    model=Folder, level=AccessType.ADMIN)
         .param('enabled', 'Whether this is the example folder.', dataType='boolean',
                default=True, required=False)
     )

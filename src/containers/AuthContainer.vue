@@ -10,8 +10,14 @@ v-app
           image processing algorithms on them to stitch them into a smooth time-lapse video.
           You must log in or register a new user to proceed.
         .title.mt-5 Sample Videos
-        hr.my-2
+        hr.mb-3.mt-1
         v-carousel
+          v-carousel-item(v-if="loadingExamples", key="loading")
+            v-container(fill-height, justify-center, align-center)
+              v-progress-circular(indeterminate, color="primary", size="100")
+          v-carousel-item.timelapse-carousel-item(v-for="(item, i) in exampleItems", :key="i")
+            v-container(fill-height, justify-center, align-center)
+              img.timelapse-img(:src="videoUrl(item)")
       v-flex.pa-2(xs-12, md6, lg4)
         v-card
           v-tabs(v-model="activeTab", color="primary", slider-color="yellow", dark)
@@ -27,13 +33,10 @@ v-app
 
 <script>
 import { mapActions } from 'vuex';
-import rest from '@/rest';
+import rest, { getApiUrl } from '@/rest';
 import { fetchingContainer } from '@/utils/mixins';
 import LoginForm from '@/views/LoginForm';
 import RegisterForm from '@/views/RegisterForm';
-
-
-// TODO add reset-password-form subcomponent
 
 const emptyRegisterErrors = () => ({
   login: null,
@@ -54,13 +57,14 @@ export default {
     registerInProgress: false,
     activeTab: null,
     loadingExamples: false,
+    exampleItems: [],
   }),
   methods: {
     async fetch() {
       this.loadingExamples = true;
       // TODO we should have an endpoint for faster lookup
       try {
-        const examples = (await rest.get('photomorph/example')).data;
+        this.exampleItems = (await rest.get('photomorph/example')).data;
       } finally {
         this.loadingExamples = false;
       }
@@ -96,7 +100,18 @@ export default {
         this.registerInProgress = false;
       });
     },
+    videoUrl(item) {
+      return `${getApiUrl()}/item/${item._id}/download`;
+    },
     ...mapActions('auth', ['login', 'register']),
   },
 };
 </script>
+
+<style lang="stylus" scoped>
+.timelapse-carousel-item
+  background-color #444
+.timelapse-img
+  max-width 100%
+  max-height 100%
+</style>

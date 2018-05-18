@@ -1,8 +1,6 @@
 <template lang="pug">
 #app
   router-view
-  v-dialog(max-width="500px", v-model="showAuthDialog", @keydown.esc="showAuthDialog = false")
-    auth-container(@login="showAuthDialog = false", @register="showAuthDialog = false")
   v-snackbar(v-for="(toast, i) in toasts", :key="i", :value="true", :timeout="null"
       :color="toast.color", right, bottom)
     v-icon.mr-2(v-if="toast.icon") {{ toast.icon }}
