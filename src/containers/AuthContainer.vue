@@ -1,5 +1,8 @@
 <template lang="pug">
 v-app
+  v-toolbar
+    v-toolbar-title.pl-2
+      img.tb-logo(src="@/assets/KWLogo.svg")
   v-container(xs-12)
     v-layout(row, wrap)
       v-flex.pa-2(xs-12, md6, lg8)
@@ -11,10 +14,9 @@ v-app
           You must log in or register a new user to proceed.
         .title.mt-5 Sample Videos
         hr.mb-3.mt-1
-        v-carousel
-          v-carousel-item(v-if="loadingExamples", key="loading")
-            v-container(fill-height, justify-center, align-center)
-              v-progress-circular(indeterminate, color="primary", size="100")
+        v-flex.text-xs-center(v-if="loadingExamples")
+          v-progress-circular.my-4(indeterminate, color="primary", size="100")
+        v-carousel(v-else)
           v-carousel-item.timelapse-carousel-item(v-for="(item, i) in exampleItems", :key="i")
             v-container(fill-height, justify-center, align-center)
               img.timelapse-img(:src="videoUrl(item)")
@@ -111,6 +113,8 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+.tb-logo
+  height 48px
 .timelapse-carousel-item
   background-color #444
 .timelapse-img
