@@ -1,7 +1,5 @@
 <template lang="pug">
 v-card
-  v-card-title
-    h3.headline Register
   form(@submit.prevent="register")
     v-card-text
       v-text-field(v-model="username", label="Username", autofocus,

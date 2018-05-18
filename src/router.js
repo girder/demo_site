@@ -5,7 +5,7 @@ import Glance from '@/views/Glance';
 import SelectMask from '@/routes/SelectMask';
 import CTTerms from '@/views/CTTerms';
 import FrontPage from '@/views/FrontPage';
-import PhotomorphListContainer from '@/containers/PhotomorphListContainer';
+import PhotomorphListRoute from '@/routes/PhotomorphListRoute';
 // import StudyListContainer from '@/containers/StudyListContainer';
 import UploadPage from '@/views/UploadPage';
 
@@ -26,7 +26,7 @@ export default new Router({
     component: UploadPage,
   }, {
     path: '/timelapse',
-    component: PhotomorphListContainer,
+    component: PhotomorphListRoute,
   }, {
     path: '/select_mask/:folderId/item/:itemId',
     component: SelectMask,

@@ -1,7 +1,5 @@
 <template lang="pug">
 v-card
-  v-card-title
-    h3.headline Log in
   form(@submit.prevent="login")
     v-card-text
       v-text-field(v-model="username", label="Username or email", autofocus)

@@ -103,8 +103,34 @@ class Photomorph(Resource):
         self.resourceName = 'photomorph'
 
         self.route('GET', (), self.listPhotomorphs)
+        self.route('GET', ('example',), self.listExamples)
         self.route('POST', (), self.createPhotomorph)
         self.route('POST', (':id', 'process'), self.runPhotomorph)
+        self.route('PUT', (':id', 'examples_folder'), self.setExamplesFolder)
+
+    @access.admin
+    @autoDescribeRoute(
+        Description('Set the folder containing site-wide examples.')
+        .modelParam('id', 'The ID of the folder containing the examples as items.',
+                    model=Folder)
+        .param('enabled', 'Whether this is the example folder.', dataType='boolean',
+               default=True, required=False)
+    )
+    def setExamplesFolder(self, folder, enabled):
+        op = '$set' if enabled else '$unset'
+        Folder().update({'_id': folder['_id']}, {op: {
+            'photomorphExampleFolder': True
+        }}, multi=False)
+        return enabled
+
+    @access.public
+    @filtermodel(Item)
+    @autoDescribeRoute(
+        Description('List example timelapse videos as items.')
+    )
+    def listExamples(self):
+        folder = Folder().findOne({'photomorphExampleFolder': True})
+        return list(Folder().childItems(folder))
 
     @access.user
     @filtermodel(Folder)
@@ -334,6 +360,7 @@ def load(info):
 
     Folder().ensureIndex(('isStudy', {'sparse': True}))
     Folder().ensureIndex(('isPhotomorph', {'sparse': True}))
+    Folder().ensureIndex(('photomorphExampleFolder', {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
         'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality', 'photomorphJobId',
         'isPhotomorph', 'photomorphInputFolderId', 'photomorphOutputItems', 'photomorphJobStatus',
