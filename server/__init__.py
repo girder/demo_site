@@ -9,22 +9,35 @@ from girder import events, logger
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute
 from girder.api.rest import Resource, filtermodel
-from girder.constants import AccessType, SortDir
+from girder.constants import AccessType, SortDir, TokenScope
 from girder.models.collection import Collection
 from girder.models.file import File
 from girder.models.folder import Folder
 from girder.models.item import Item
+from girder.models.user import User
 from girder.plugins.jobs.constants import JobStatus
 from girder.plugins.jobs.models.job import Job
 from girder.plugins.thumbnails.worker import createThumbnail
 from girder.utility import setting_utilities
-from girder.utility.server import staticFile
+from girder.utility.mail_utils import getEmailUrlPrefix, renderTemplate, sendEmail
+from girder.utility.progress import setResponseTimeLimit
 from girder.utility.plugin_utilities import registerPluginWebroot
+from girder.utility.server import staticFile
 from girder_worker.docker.tasks import docker_run
 from girder_worker.docker.transforms import VolumePath
 from girder_worker.docker.transforms.girder import (
     GirderFolderIdToVolume, GirderUploadVolumePathToFolder)
 from PIL import Image
+
+CLEANUP_TOKEN_SCOPE = 'stroke_ct.cleanup'
+DATE_FMT = '%A %B %-d, %Y'
+DAYS_UNTIL_EMAIL = 7
+DAYS_UNTIL_DELETION = 14
+DELETE_SUBJECT = 'Warning: your timelapse data will be deleted soon!'
+
+TokenScope.describeScope(
+    CLEANUP_TOKEN_SCOPE, 'Delete expired timelapse data',
+    description='Delete expired timelapses and send emails for pending ones.', admin=True)
 
 
 # [[x1, y2], [x2, y2]] in pixel coordinates
@@ -107,6 +120,7 @@ class Photomorph(Resource):
         self.route('POST', (), self.createPhotomorph)
         self.route('POST', (':id', 'process'), self.runPhotomorph)
         self.route('PUT', (':id', 'examples_folder'), self.setExamplesFolder)
+        self.route('DELETE', ('expired',), self.deleteExpired)
 
     @access.admin
     @autoDescribeRoute(
@@ -131,6 +145,31 @@ class Photomorph(Resource):
     def listExamples(self):
         folder = Folder().findOne({'photomorphExampleFolder': True})
         return list(Folder().childItems(folder))
+
+    @access.admin(scope=CLEANUP_TOKEN_SCOPE)
+    def deleteExpired(self):
+        cursor = Folder().find({'isPhotomorph': True})
+        now = datetime.datetime.utcnow()
+        emailExp = datetime.timedelta(days=DAYS_UNTIL_EMAIL)
+        dataExp = datetime.timedelta(days=DAYS_UNTIL_DELETION)
+
+        for folder in cursor:
+            setResponseTimeLimit()
+            if folder['created'] + dataExp < now:
+                logger.info('Delete timelapse %s (uid=%s)' % (folder['name'], folder['creatorId']))
+                Folder().remove(folder)
+            elif not folder.get('timelapseEmailSent') and folder['created'] + emailExp < now:
+                try:
+                    user = User().load(folder['creatorId'], force=True, exc=True)
+                    text = renderTemplate('timelapse.deletePending.mako', params={
+                        'folder': folder,
+                        'days': DAYS_UNTIL_DELETION,
+                        'url': getEmailUrlPrefix() + '#timelapse',
+                        'deletionDate': (folder['created'] + dataExp).strftime(DATE_FMT)
+                    })
+                    sendEmail(to=user['email'], subject=DELETE_SUBJECT, text=text)
+                except Exception:
+                    logger.exception('Error sending email for folder: %s' % folder['_id'])
 
     @access.user
     @filtermodel(Folder)
@@ -337,7 +376,6 @@ def _jobUpdated(event):
                 'photomorphJobStatus': params['status']
             }
         }, multi=False)
-
 
 
 @setting_utilities.validator(PluginSettings.STUDIES_COLL_ID)
