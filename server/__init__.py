@@ -171,8 +171,9 @@ class Photomorph(Resource):
                         'deletionDate': (folder['created'] + dataExp).strftime(DATE_FMT)
                     })
                     sendEmail(to=user['email'], subject=DELETE_SUBJECT, text=text)
-                    folder['timelapseEmailSent'] = True
-                    Folder().save(folder)
+                    Folder().update({'_id': folder['_id']}, {
+                        '$set': {'timelapseEmailSent': True}
+                    }, multi=False)
                 except Exception:
                     logger.exception('Error sending email for folder: %s' % folder['_id'])
 
