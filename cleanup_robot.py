@@ -3,6 +3,6 @@
 import girder_client
 import sys
 
-gc = girder_client.GirderClient()
+gc = girder_client.GirderClient(apiUrl='https://algorithms.kitware.com/api/v1')
 gc.authenticate(apiKey=sys.argv[1])
 gc.delete('photomorph/expired')
