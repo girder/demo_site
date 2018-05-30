@@ -241,7 +241,7 @@ class Photomorph(Resource):
         }
 
         job = docker_run.delay(
-            'photomorph:latest', container_args=[
+            'zachmullen/photomorph:latest', container_args=[
                 '--mp4-out', mp4Out,
                 '--gif-out', gifOut,
                 '--mask-rect', ','.join(str(i) for i in itertools.chain(*maskRect)),
@@ -262,7 +262,7 @@ class Photomorph(Resource):
                         'resultType': 'gif'
                     })
                 })
-            ], pull_image=False).job  # TODO pull the image for real.
+            ]).job
 
         parent['photomorphJobId'] = job['_id']
         Folder().save(parent)
