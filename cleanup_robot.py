@@ -1,5 +1,5 @@
 # crontab entry:
-# * */4 * * * python cleanup_robot.py <API_KEY>
+# 0 */4 * * * python cleanup_robot.py <API_KEY>
 import girder_client
 import sys
 
