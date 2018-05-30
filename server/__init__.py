@@ -147,6 +147,9 @@ class Photomorph(Resource):
         return list(Folder().childItems(folder))
 
     @access.admin(scope=CLEANUP_TOKEN_SCOPE)
+    @autoDescribeRoute(
+        Description('Clean up expired timelapse data.')
+    )
     def deleteExpired(self):
         cursor = Folder().find({'isPhotomorph': True})
         now = datetime.datetime.utcnow()
