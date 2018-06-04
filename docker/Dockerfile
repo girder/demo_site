@@ -10,12 +10,15 @@ RUN echo "tzdata tzdata/Areas select America" > /tmp/preseed.txt; \
     apt-get install -y tzdata
 RUN apt-get install -y \
     software-properties-common build-essential cmake git python-dev python-pip \
-    libopencv-dev python-opencv libinsighttoolkit4-dev
-RUN pip install click itk
+    libopencv-dev python-opencv libinsighttoolkit4-dev imagemagick
+RUN pip install click itk pillow
 
 # Build Timelapse-OpticalFlow
 RUN git clone https://github.com/KitwareMedical/TimeLapse-OpticalFlow.git && \
-    mkdir -p _build && cd _build && cmake ../TimeLapse-OpticalFlow && make -j4
+    mkdir -p _build && cd _build && cmake ../TimeLapse-OpticalFlow && make -j4 && \
+    mv ./ImageSimilarityRegistration /bin/ImageSimilarityRegistration && \
+    mv ./InterpByOpticalFlow /bin/InterpByOpticalFlow && \
+    rm -f /_build
 
 COPY ./run.py /run.py
 
