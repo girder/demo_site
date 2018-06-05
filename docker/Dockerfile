@@ -18,7 +18,7 @@ RUN git clone https://github.com/KitwareMedical/TimeLapse-OpticalFlow.git && \
     mkdir -p _build && cd _build && cmake ../TimeLapse-OpticalFlow && make -j4 && \
     mv ./ImageSimilarityRegistration /bin/ImageSimilarityRegistration && \
     mv ./InterpByOpticalFlow /bin/InterpByOpticalFlow && \
-    rm -f /_build
+    rm -rf /_build
 
 COPY ./run.py /run.py
 
