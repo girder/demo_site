@@ -1,5 +1,9 @@
 import click
 import os
+import shutil
+import subprocess
+import sys
+import time
 from PIL import Image
 
 __version__ = '0.1.0'
@@ -14,6 +18,7 @@ __version__ = '0.1.0'
 def run(in_dir, mp4_out, gif_out, mask_rect):
     files = [os.path.join(in_dir, f) for f in sorted(os.listdir(in_dir))]
     in_img = Image.open(files[0])
+    os.mkdir('/artifacts')
 
     # Create the mask image
     x1, y1, x2, y2 = [int(v) for v in mask_rect.split(',')]
@@ -21,19 +26,49 @@ def run(in_dir, mp4_out, gif_out, mask_rect):
     ymin, ymax = min(y1, y2), max(y1, y2)
     mask = Image.new('RGB', (in_img.width, in_img.height), (0, 0, 0))
     mask.paste((255, 255, 255), [xmin, ymin, xmax, ymax])
-    mask.save(os.path.join(in_dir, '__mask__.png'))
+    mask.save('/artifacts/__mask__.png')
 
-    # TODO Replace dummy code below with actual algorithm
-    """if mp4_out:
-        os.mkdir(mp4_out)
-        with open(os.path.join(mp4_out, 'out.mp4'), 'wb') as out, open('/test.mp4', 'rb') as mp4:
-            out.write(mp4.read())
+    # Register the images
+    print('Registering images')
+    start = time.time()
+    basename = os.path.basename(files[0])
+    name, ext = os.path.splitext(basename)
+    reg_images = ['/artifacts/%s_reg%s' % (name, ext)]
 
+    shutil.copy(files[0], reg_images[0])
+    for image in files[1:]:
+        print(image)
+        name, ext = os.path.splitext(os.path.basename(image))
+        out_file = '/artifacts/%s_reg%s' % (name, ext)
+        subprocess.check_call([
+            '/bin/ImageSimilarityRegistration',
+            files[0], image, '/artifacts/__mask__.png', out_file
+        ], stdout=sys.stdout, stderr=sys.stderr)
+        reg_images.append(out_file)
+    print('Finished in %s s\n' % (time.time() - start))
+
+    # Run optical flow
+    print('Running optical flow')
+    start = time.time()
+    interp_images = [files[0]]
+    for i in range(len(files) - 1):
+        print(files[i])
+        subprocess.check_call([
+            '/bin/InterpByOpticalFlow',
+            files[i], files[i+1]
+        ], stdout=sys.stdout, stderr=sys.stderr)
+        name, ext = os.path.splitext(files[i])
+        for j in range(1, 10):
+            interp_images.append('%s_%s%s' % (name, j, ext))
+    interp_images.append(files[-1])
+    print('Finished in %s s\n' % (time.time() - start))
+
+    # Create a GIF from the interpolated images
     if gif_out:
-        os.mkdir(gif_out)
-        with open(os.path.join(gif_out, 'out.gif'), 'wb') as out, open('/test.gif', 'rb') as gif:
-            out.write(gif.read())
-    """
+        print('Creating GIF output')
+        subprocess.check_call([
+            '/usr/bin/convert', '-delay', '10', '-loop', '0'
+        ] + interp_images + [gif_out], stdout=sys.stdout, stderr=sys.stderr)
 
 
 if __name__ == '__main__':
