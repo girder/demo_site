@@ -65,11 +65,21 @@ def run(in_dir, mp4_out, gif_out, mask_rect):
 
     # Create a GIF from the interpolated images
     if gif_out:
+        try:
+            os.mkdir(gif_out)
+        except Exception:
+            pass
         path = os.path.join(gif_out, 'OpticalFlow.gif')
         print('Creating GIF output')
         subprocess.check_call([
             '/usr/bin/convert', '-delay', '10', '-loop', '0'
         ] + interp_images + [path], stdout=sys.stdout, stderr=sys.stderr)
+
+    if mp4_out:
+        try:
+            os.mkdir(mp4_out)
+        except Exception:
+            pass
 
 
 if __name__ == '__main__':
