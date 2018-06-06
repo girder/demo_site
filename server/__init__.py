@@ -86,10 +86,14 @@ def _handleUpload(event):
     if 'photomorphOrdinal' in reference:
         item = Item().load(file['itemId'], force=True, exc=True)
         item['originalName'] = item['name']
-        item['name'] = '%05d_%s' % (reference['photomorphOrdinal'], item['name'])
+        name = '%05d_%s' % (reference['photomorphOrdinal'], item['name'])
+        item['name'] = name
         item['photomorphTakenDate'] = _extractDate(file)
 
         Item().save(item)
+
+        file['name'] = name
+        File().save(file)
 
         try:
             createThumbnail(
