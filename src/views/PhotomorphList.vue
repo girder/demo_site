@@ -1,5 +1,5 @@
 <template lang="pug">
-v-app(dark)
+v-app(light)
   v-toolbar(app)
     v-toolbar-title
       img.kw-logo(src="@/assets/KWLogo.svg")
@@ -139,7 +139,7 @@ export default {
       text: 'Date uploaded',
       value: 'created',
     }, {
-      text: 'Results',
+      text: 'Status',
       sortable: false,
       align: 'right',
     }],
