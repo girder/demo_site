@@ -1,5 +1,5 @@
 <template lang="pug">
-v-app(light)
+v-app
   v-toolbar(app)
     v-toolbar-title
       img.kw-logo(src="@/assets/KWLogo.svg")
@@ -61,7 +61,7 @@ v-app(light)
                 | {{ jobStatusIcon(props.item.photomorphJobStatus) }}
 
     // Details view
-    v-flex.mt-3(xs12, md10, offset-md1 v-if="selectedFolder")
+    v-flex.my-3(xs12, md10, offset-md1 v-if="selectedFolder")
       v-card
         v-card-title
           v-text-field(v-model="selectedFolder.name", v-if="editingName", append-icon="save",
@@ -75,28 +75,29 @@ v-app(light)
 
         v-layout.py-3(justify-center, align-center, v-if="loadingChildren")
           v-progress-circular(indeterminate, color="primary")
-        hr
-        .headline.px-2.mt-2
-          | Results
-          v-tooltip(right, v-if="inputItems.length")
-            v-btn(icon, slot="activator",
+        v-divider
+        v-expansion-panel(expand)
+          v-expansion-panel-content(ripple, :value="true")
+            div(slot="header") Results
+            v-tooltip(right, v-if="inputItems.length")
+              v-btn(icon, slot="activator",
     :to="`/select_mask/${selectedFolder.photomorphInputFolderId}/item/${inputItems[0]._id}`")
-              v-icon play_circle_outline
-            span Re-run processing
-        .result-item-container(v-for="item in outputItems")
-          .body-2.mt-3 {{ item.name }}
-          img(v-if="item.type === 'gif'", :src="videoUrl(item.fileId)")
-          video(v-else, :src="videoUrl(item.fileId)", controls, loop)
-
-        .headline.px-2.mt-2 Input images
-        .input-item-container.px-2.py-2(v-for="item in inputItems", :key="item._id")
-          v-layout(row, align-center)
-            div #[img(:src="thumbUrl(item)")]
-            v-layout.ml-3(column)
-              .title {{ item.originalName }}
-              .body-2
-                span {{ formatDataSize(item.size) }}
-                span(v-if="item.photomorphTakenDate")  - photo date {{ item.photomorphTakenDate }}
+                v-icon play_circle_outline
+              span Re-run processing
+            .result-item-container(v-for="item in outputItems")
+              .body-2.mt-3 {{ item.name }}
+              img(v-if="item.type === 'gif'", :src="videoUrl(item.fileId)")
+              video(v-else, :src="videoUrl(item.fileId)", controls, loop)
+          v-expansion-panel-content(ripple)
+            div(slot="header") Input images
+            .input-item-container.px-2.py-2(v-for="item in inputItems", :key="item._id")
+              v-layout(row, align-center)
+                div #[img(:src="thumbUrl(item)")]
+                v-layout.ml-3(column)
+                  .title {{ item.originalName }}
+                  .body-2
+                    span {{ formatDataSize(item.size) }}
+                    span(v-if="item.photomorphTakenDate")  - photo date {{ item.photomorphTakenDate }}
 </template>
 
 <script>
