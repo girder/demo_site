@@ -97,7 +97,11 @@ v-app
             .input-item-container.px-2.py-2(v-for="item in inputItems", :key="item._id")
               v-layout(row, align-center)
                 div #[img(:src="thumbUrl(item)")]
-                v-layout.ml-3(column)
+                v-tooltip
+                  v-btn(icon, slot="activator", @click="deleteImage(item)")
+                    v-icon delete
+                  span Delete image
+                v-layout(column)
                   .title {{ item.originalName }}
                   .body-2
                     span {{ formatDataSize(item.size) }}
@@ -258,6 +262,14 @@ export default {
       });
       if (ok) {
         this.$emit('deleteFolder', this.selectedFolder);
+      }
+    },
+    async deleteImage(item) {
+      const ok = await confirm({
+        markdown: `Are you sure you want to remove the image **${item.name}** from the set?`,
+      });
+      if (ok) {
+        this.$emit('deleteItem', item);
       }
     },
   },

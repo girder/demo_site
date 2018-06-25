@@ -1,7 +1,8 @@
 <template lang="pug">
 photomorph-list(:folders="folders", :selected-folder="selectedFolder", :loading="fetchingList",
     :loading-children="fetchingChildren", @select="selectFolder", :input-items="inputItems",
-    @saveFolder="saveFolder", @refreshList="fetch", @deleteFolder="deleteFolder")
+    @saveFolder="saveFolder", @refreshList="fetch", @deleteFolder="deleteFolder",
+    @deleteItem="deleteItem")
 </template>
 
 <script>
@@ -67,6 +68,10 @@ export default {
       await rest.delete(`folder/${folder._id}`);
       this.selectedFolder = null;
       this.fetch();
+    },
+    async deleteItem(item) {
+      await rest.delete(`item/${item._id}`);
+      this.inputItems = this.inputItems.filter(v => v._id !== item._id);
     },
     ...mapActions('toast', ['showToast']),
   },
