@@ -61,17 +61,26 @@ v-app
                 | {{ jobStatusIcon(props.item.photomorphJobStatus) }}
 
     // Details view
-    v-flex.my-3(xs12, md10, offset-md1 v-if="selectedFolder")
+    v-flex.mt-3.mb-5(xs12, md10, offset-md1 v-if="selectedFolder")
       v-card
         v-card-title
           v-text-field(v-model="selectedFolder.name", v-if="editingName", append-icon="save",
                 autofocus, :append-icon-cb="saveFolderName")
           h3.headline(v-else)
-            span {{ selectedFolder.name }}
-            v-btn(icon, @click="editingName = true", v-if="!editingName")
-              v-icon edit
-            v-btn(icon, @click="deleteFolder", v-if="!editingName")
-              v-icon delete
+            span.mr-4 {{ selectedFolder.name }}
+            v-tooltip(bottom)
+              v-btn(icon, @click="editingName = true", v-if="!editingName", slot="activator")
+                v-icon edit
+              span Edit name
+            v-tooltip(bottom)
+              v-btn(icon, @click="deleteFolder", v-if="!editingName", slot="activator")
+                v-icon delete
+              span Delete
+            v-tooltip(bottom, v-if="inputItems.length")
+              v-btn(icon, slot="activator",
+    :to="`/select_mask/${selectedFolder.photomorphInputFolderId}/item/${inputItems[0]._id}`")
+                v-icon play_circle_outline
+              span Re-run processing
 
         v-layout.py-3(justify-center, align-center, v-if="loadingChildren")
           v-progress-circular(indeterminate, color="primary")
@@ -79,12 +88,7 @@ v-app
         v-expansion-panel(expand)
           v-expansion-panel-content(ripple, :value="true")
             div(slot="header") Results
-            v-tooltip(right, v-if="inputItems.length")
-              v-btn(icon, slot="activator",
-    :to="`/select_mask/${selectedFolder.photomorphInputFolderId}/item/${inputItems[0]._id}`")
-                v-icon play_circle_outline
-              span Re-run processing
-            .result-item-container(v-for="item in outputItems")
+            .result-item-container.pa-3(v-for="item in outputItems")
               .body-2.mt-3 {{ item.name }}
               img(v-if="item.type === 'gif'", :src="videoUrl(item.fileId)")
               video(v-else, :src="videoUrl(item.fileId)", controls, loop)
@@ -97,7 +101,8 @@ v-app
                   .title {{ item.originalName }}
                   .body-2
                     span {{ formatDataSize(item.size) }}
-                    span(v-if="item.photomorphTakenDate")  - photo date {{ item.photomorphTakenDate }}
+                    span(v-if="item.photomorphTakenDate")
+                      |  - photo date {{ item.photomorphTakenDate }}
 </template>
 
 <script>
@@ -106,7 +111,6 @@ import { getApiUrl } from '@/rest';
 import dateformat from 'dateformat';
 import confirm from '@/utils/confirm';
 import { sizeFormatter } from '@/utils/mixins';
-
 
 export default {
   mixins: [sizeFormatter],
@@ -275,4 +279,10 @@ export default {
     transform rotate(360deg)
   to
     transform rotate(0deg)
+
+.result-item-container
+  background-color #f1f1f1
+
+  img,video
+    max-width 100%
 </style>
