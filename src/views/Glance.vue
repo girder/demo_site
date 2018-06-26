@@ -13,14 +13,16 @@ import vtkWidgetManager from 'paraview-glance/src/vtkwidgets/WidgetManager';
 import vtkProxyManager from 'vtk.js/Sources/Proxy/Core/ProxyManager';
 import 'paraview-glance/src/io/ParaViewGlanceReaders';
 
+Vue.prototype.$globalBus = new Vue();
+
 const proxyConfiguration = Config.Proxy;
 const proxyManager = vtkProxyManager.newInstance({ proxyConfiguration });
 const renderListener = vtkListenerHelper.newInstance(
   proxyManager.autoAnimateViews,
   () => [
-    proxyManager.getSources(),
-    proxyManager.getRepresentations(),
-    proxyManager.getViews(),
+    ...proxyManager.getSources(),
+    ...proxyManager.getRepresentations(),
+    ...proxyManager.getViews(),
   ],
 );
 
@@ -28,8 +30,6 @@ proxyManager.onProxyRegistrationChange(renderListener.resetListeners);
 
 const widgetManager = vtkWidgetManager.newInstance({ proxyManager });
 widgetManager.registerWidgetGroup(Widgets.CROP, CropWidget);
-
-Vue.prototype.$globalBus = new Vue();
 
 export default {
   components: { GlanceApp },
