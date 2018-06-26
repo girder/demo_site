@@ -17,7 +17,7 @@ v-app
       .banner-bg(:style="{'background-image': `url(${require('@/assets/CV_Band.jpg')})`}")
       .title-ctr Computer Vision
 
-    v-list.mb-4.pa-0.list-ctr
+    v-list.pa-0.list-ctr
       v-list-tile.py-2(to="/timelapse")
         v-list-tile-content #[v-list-tile-title.alg-title Timelapse Video Creation]
         v-list-tile-action
@@ -90,6 +90,7 @@ v-app
   position relative
   margin-left 5%
   margin-right 5%
+  margin-bottom 60px
 
   .alg-title
     font-size 23px

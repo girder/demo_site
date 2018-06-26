@@ -3,6 +3,7 @@ const path = require('path')
 const utils = require('./utils')
 const config = require('../config')
 const vueLoaderConfig = require('./vue-loader.conf')
+const autoprefixer = require('autoprefixer')
 
 function resolve (dir) {
   return path.join(__dirname, '..', dir)
@@ -79,13 +80,49 @@ module.exports = {
           limit: 10000,
           name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
         }
-      }
+      },
+      {
+        test: /\.glsl$/,
+        include: /node_modules(\/|\\)vtk\.js(\/|\\)/,
+        loader: 'shader-loader',
+      },
+      {
+        test: /\.svg$/,
+        include: /node_modules(\/|\\)vtk\.js(\/|\\)/,
+        loader: 'raw-loader',
+      },
+      {
+        test: /\.worker\.js$/,
+        include: /node_modules(\/|\\)vtk\.js(\/|\\)/,
+        use: [
+          {
+            loader: 'worker-loader',
+            options: { inline: true, fallback: false },
+          },
+        ],
+      },
+      {
+        test: /\.mcss$/,
+        use: [
+          { loader: 'style-loader' },
+          {
+            loader: 'css-loader',
+            options: {
+              localIdentName: '[name]-[local]-[sha512:hash:base32:5]',
+              modules: true,
+            },
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              plugins: () => [autoprefixer('last 3 version', 'ie >= 10')],
+            },
+          },
+        ],
+      },
     ]
   },
   node: {
-    // prevent webpack from injecting useless setImmediate polyfill because Vue
-    // source contains it (although only uses it if it's native).
-    setImmediate: false,
     // prevent webpack from injecting mocks to Node native modules
     // that does not make sense for the client
     dgram: 'empty',
@@ -93,5 +130,7 @@ module.exports = {
     net: 'empty',
     tls: 'empty',
     child_process: 'empty'
-  }
+  },
+  plugins: [
+  ],
 }

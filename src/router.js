@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Glance from '@/views/Glance';
-// import GlanceItem from '@/routes/GlanceItem';
+import GlanceItem from '@/routes/GlanceItem';
 import SelectMask from '@/routes/SelectMask';
 import CTTerms from '@/views/CTTerms';
 import FrontPage from '@/views/FrontPage';
@@ -18,6 +18,9 @@ export default new Router({
   }, {
     path: '/glance',
     component: Glance,
+  }, {
+    path: '/glance/:id',
+    component: GlanceItem,
   }, {
     path: '/ct_terms',
     component: CTTerms,
