@@ -47,6 +47,11 @@ export default {
     proxyManager,
     widgetManager,
   },
+  watch: {
+    url() {
+      this.$refs.glance.loadRemoteDatasets([this.url], [this.name]);
+    },
+  },
   mounted() {
     if (this.name && this.url) {
       this.$refs.glance.loadRemoteDatasets([this.url], [this.name]);
