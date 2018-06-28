@@ -98,7 +98,7 @@ v-app
             .input-item-container.px-2.py-2(v-for="item in inputItems", :key="item._id")
               v-layout(row, align-center)
                 div #[img(:src="thumbUrl(item)")]
-                v-tooltip
+                v-tooltip(bottom)
                   v-btn(icon, slot="activator", @click="deleteImage(item)")
                     v-icon delete
                   span Delete image
