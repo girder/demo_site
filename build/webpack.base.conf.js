@@ -54,6 +54,7 @@ module.exports = {
           resolve('test'),
           resolve('node_modules/webpack-dev-server/client'),
           resolve('node_modules/paraviewweb/src'),
+          resolve('node_modules/paraview-glance/src'),
           resolve('node_modules/vtk.js'),
         ],
       },
