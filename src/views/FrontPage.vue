@@ -30,7 +30,7 @@ v-app
 
     .banner-ctr
       .banner-bg(:style="{'background-image': `url(${require('@/assets/Med_Band.jpg')})`}")
-      .title-ctr Medical Imaging
+      .title-ctr Medical Visualization
 
     v-list.mb-4.pa-0.list-ctr
       v-list-tile.py-2(to="/ct_terms")
@@ -40,6 +40,11 @@ v-app
       v-divider
       v-list-tile.py-2(disabled)
         v-list-tile-content #[v-list-tile-title.alg-title Stroke Assessment (coming soon)]
+        v-list-tile-action
+          v-icon(large) keyboard_arrow_right
+      v-divider
+      v-list-tile.py-2(disabled)
+        v-list-tile-content #[v-list-tile-title.alg-title Traumatic Brain Injury (coming soon)]
         v-list-tile-action
           v-icon(large) keyboard_arrow_right
 
