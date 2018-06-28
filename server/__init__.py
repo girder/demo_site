@@ -402,6 +402,11 @@ def load(info):
         'tools.staticdir.dir': os.path.join(info['pluginRootDir'], 'dist', 'stroke_ct_static')
     }
 
+    info['config']['/itk'] = {
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': os.path.join(info['pluginRootDir'], 'dist', 'itk')
+    }
+
     # info['apiRoot'].study = Study()
     # info['apiRoot'].series = Series()
     info['apiRoot'].photomorph = Photomorph()
