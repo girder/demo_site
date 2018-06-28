@@ -2,7 +2,8 @@
 v-app
   v-toolbar(app)
     v-toolbar-title
-      img.kw-logo(src="@/assets/KWLogo.svg")
+      router-link(to="/")
+        img.kw-logo(src="@/assets/KWLogo.svg")
     v-spacer
     .headline Timelapse generation
   v-content
