@@ -18,6 +18,17 @@ v-app
       .title-ctr Computer Vision
 
     v-list.pa-0.list-ctr
+      v-list-tile.py-2.link-height-hack(href="https://vimeo.com/90767973")
+        v-list-tile-content
+          v-list-tile-title.alg-title Tracking
+          v-container(grid-list-xl)
+            v-layout(row, wrap)
+              v-flex(v-for="(img, i) in trackingImgs" :key="i", xs4)
+                v-card
+                  v-card-media(height="200px", :src="img")
+        v-list-tile-action
+          v-icon(large) keyboard_arrow_right
+      v-divider
       v-list-tile.py-2(to="/timelapse")
         v-list-tile-content #[v-list-tile-title.alg-title Timelapse Video Creation]
         v-list-tile-action
@@ -52,6 +63,22 @@ v-app
     .text-xs-center.mb-4
       .subtitle &copy; Kitware, Inc.
 </template>
+
+<script>
+import trackingImg1 from '@/assets/tracking_1.jpg';
+import trackingImg2 from '@/assets/tracking_2.jpg';
+import trackingImg3 from '@/assets/tracking_3.jpg';
+
+export default {
+  data: () => ({
+    trackingImgs: [
+      trackingImg1,
+      trackingImg2,
+      trackingImg3,
+    ],
+  }),
+};
+</script>
 
 <style lang="stylus" scoped>
 .kw-logo
@@ -100,4 +127,10 @@ v-app
   .alg-title
     font-size 23px
     color #0d47a1
+</style>
+
+<style lang="stylus">
+.list-ctr .link-height-hack a
+  padding-top 10px
+  height inherit
 </style>
