@@ -57,9 +57,11 @@ v-app
                 span(slot="activator" ) {{ dateformat(props.item.created, 'mmm d, yyyy') }}
                 span {{ props.item.created }}
             td.text-xs-right
-              v-icon(:class="jobStatusClass(props.item.photomorphJobStatus)",
-                  :color="jobStatusColor(props.item.photomorphJobStatus)")
-                | {{ jobStatusIcon(props.item.photomorphJobStatus) }}
+              v-tooltip(left)
+                v-icon(:class="jobStatusClass(props.item.photomorphJobStatus)",
+                    :color="jobStatusColor(props.item.photomorphJobStatus)", slot="activator")
+                  | {{ jobStatusIcon(props.item.photomorphJobStatus) }}
+                span {{ jobStatusTooltip(props.item.photomorphJobStatus) }}
 
     // Details view
     v-flex.mt-3.mb-5(xs12, md10, offset-md1 v-if="selectedFolder")
@@ -216,6 +218,21 @@ export default {
           return 'error';
         default:
           return 'report_problem';
+      }
+    },
+    jobStatusTooltip(status) {
+      switch (Number(status)) {
+        case 0:
+        case 1:
+          return 'Waiting in queue';
+        case 2:
+          return 'Currently running';
+        case 3:
+          return 'Finished';
+        case 4:
+          return 'An error occurred';
+        default:
+          return 'Status unknown';
       }
     },
     dateformat,
