@@ -11,6 +11,7 @@ import { Widgets } from 'paraview-glance/src/constants';
 import CropWidget from 'paraview-glance/src/vtkwidgets/CropWidget';
 import vtkListenerHelper from 'paraview-glance/src/ListenerHelper';
 import vtkWidgetManager from 'paraview-glance/src/vtkwidgets/WidgetManager';
+import Store from 'paraview-glance/src/stores';
 import vtkProxyManager from 'vtk.js/Sources/Proxy/Core/ProxyManager';
 import 'paraview-glance/src/io/ParaViewGlanceReaders';
 
@@ -65,6 +66,7 @@ export default {
     proxyManager,
     widgetManager,
   },
+  store: Store,
   watch: {
     url() {
       this.$refs.glance.loadRemoteDatasets([this.url], [this.name]);
