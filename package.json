@@ -25,7 +25,7 @@
     "paraview-glance": "^2.2.3",
     "paraviewweb": "^3.1.2",
     "qs": "^6.5.1",
-    "vtk.js": "^7.0.2",
+    "vtk.js": "^7.3.2",
     "vue": "^2.5.16",
     "vue-router": "^3.0.1",
     "vuedraggable": "^2.16.0",

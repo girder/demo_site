@@ -8806,24 +8806,9 @@ void-elements@^2.0.0, void-elements@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/void-elements/-/void-elements-2.0.1.tgz#c066afb582bb1cb4128d60ea92392e94d5e9dbec"
 
-vtk.js@7.3.2:
+vtk.js@7.3.2, vtk.js@^7.3.2:
   version "7.3.2"
   resolved "https://registry.yarnpkg.com/vtk.js/-/vtk.js-7.3.2.tgz#59d2f66b1bbf2109630d7baa58949eaf628f35ef"
-  dependencies:
-    base64-js "1.2.1"
-    blueimp-md5 "2.10.0"
-    commander "2.11.0"
-    gl-matrix "2.5.1"
-    jszip "3.1.4"
-    pako "1.0.6"
-    seedrandom "2.4.3"
-    shelljs "0.7.8"
-    webvr-polyfill "0.10.5"
-    webworker-promise "0.4.1"
-
-vtk.js@^7.0.2:
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/vtk.js/-/vtk.js-7.0.2.tgz#181e1b2b24806f0c3dbe693d673d24753a231080"
   dependencies:
     base64-js "1.2.1"
     blueimp-md5 "2.10.0"
