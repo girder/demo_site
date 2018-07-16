@@ -1,9 +1,10 @@
 <template lang="pug">
-glance-app(ref="glance")
+glance-app
 </template>
 
 <script>
 import Vue from 'vue';
+import { mapActions } from 'vuex';
 import GlanceApp from 'paraview-glance/src/components/core/App';
 import ReaderFactory from 'paraview-glance/src/io/ReaderFactory';
 import Config from 'paraview-glance/src/config';
@@ -12,6 +13,7 @@ import CropWidget from 'paraview-glance/src/vtkwidgets/CropWidget';
 import vtkListenerHelper from 'paraview-glance/src/ListenerHelper';
 import vtkWidgetManager from 'paraview-glance/src/vtkwidgets/WidgetManager';
 import Store from 'paraview-glance/src/stores';
+import StoreTypes from 'paraview-glance/src/stores/types';
 import vtkProxyManager from 'vtk.js/Sources/Proxy/Core/ProxyManager';
 import 'paraview-glance/src/io/ParaViewGlanceReaders';
 
@@ -69,13 +71,22 @@ export default {
   store: Store,
   watch: {
     url() {
-      this.$refs.glance.loadRemoteDatasets([this.url], [this.name]);
+      this.openFiles({
+        urls: [this.url],
+        names: [this.name],
+      });
     },
   },
   mounted() {
     if (this.name && this.url) {
-      this.$refs.glance.loadRemoteDatasets([this.url], [this.name]);
+      this.openFiles({
+        urls: [this.url],
+        names: [this.name],
+      });
     }
   },
+  methods: mapActions({
+    openFiles: StoreTypes.Actions.OPEN_REMOTE_FILES,
+  }),
 };
 </script>
