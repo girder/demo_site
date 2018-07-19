@@ -1,4 +1,4 @@
-name: Stroke CT assessment
+name: ParaView Glance demo plugin
 dependencies:
   - thumbnails
   - worker
