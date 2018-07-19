@@ -1,4 +1,4 @@
-name: ParaView Glance demo plugin
+name: Demo site plugin
 dependencies:
   - thumbnails
   - worker
