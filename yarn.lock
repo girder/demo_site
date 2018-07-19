@@ -5334,6 +5334,10 @@ merge-descriptors@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/merge-descriptors/-/merge-descriptors-1.0.1.tgz#b00aaa556dd8b44568150ec9d1b953f3f90cbb61"
 
+merge@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/merge/-/merge-1.2.0.tgz#7531e39d4949c281a66b8c5a6e0265e8b05894da"
+
 methods@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/methods/-/methods-1.1.2.tgz#5529a4d67654134edcc5266656835b0f851afcee"
@@ -5527,6 +5531,10 @@ monologue.js@^0.3.5:
   dependencies:
     lodash "3.x"
     riveter "0.2.0"
+
+mousetrap@^1.6.2:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/mousetrap/-/mousetrap-1.6.2.tgz#caadd9cf886db0986fb2fee59a82f6bd37527587"
 
 mout@^1.1.0:
   version "1.1.0"
@@ -6271,14 +6279,16 @@ param-case@2.1.x:
   dependencies:
     no-case "^2.2.0"
 
-paraview-glance@^2.2.3:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/paraview-glance/-/paraview-glance-2.2.3.tgz#c71ebf26b939615994e087402a04894cba979516"
+paraview-glance@^2.5.1:
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/paraview-glance/-/paraview-glance-2.5.1.tgz#bb41169f683a11f94565be16cfcda1598a9cc0d5"
   dependencies:
     itk "9.1.1"
     material-design-icons-iconfont "3.0.3"
+    merge "^1.2.0"
+    mousetrap "^1.6.2"
     typeface-roboto "0.0.54"
-    vtk.js "7.3.2"
+    vtk.js "7.4.4"
     vue "2.5.16"
     vuetify "1.0.19"
     vuex "^3.0.1"
@@ -8806,7 +8816,22 @@ void-elements@^2.0.0, void-elements@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/void-elements/-/void-elements-2.0.1.tgz#c066afb582bb1cb4128d60ea92392e94d5e9dbec"
 
-vtk.js@7.3.2, vtk.js@^7.3.2:
+vtk.js@7.4.4:
+  version "7.4.4"
+  resolved "https://registry.yarnpkg.com/vtk.js/-/vtk.js-7.4.4.tgz#135f9155e5d1ebb832b4382354b57e02a1b86a27"
+  dependencies:
+    base64-js "1.2.1"
+    blueimp-md5 "2.10.0"
+    commander "2.11.0"
+    gl-matrix "2.5.1"
+    jszip "3.1.4"
+    pako "1.0.6"
+    seedrandom "2.4.3"
+    shelljs "0.7.8"
+    webvr-polyfill "0.10.5"
+    webworker-promise "0.4.1"
+
+vtk.js@^7.3.2:
   version "7.3.2"
   resolved "https://registry.yarnpkg.com/vtk.js/-/vtk.js-7.3.2.tgz#59d2f66b1bbf2109630d7baa58949eaf628f35ef"
   dependencies:
