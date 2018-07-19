@@ -1,9 +1,6 @@
 import $ from 'jquery';
-import { Layout } from 'girder/constants';
-import events from 'girder/events';
-import ItemModel from 'girder/models/ItemModel';
+import ItemListWidget from 'girder/views/widgets/ItemListWidget';
 import ItemView from 'girder/views/body/ItemView';
-import router from 'girder/router';
 import { wrap } from 'girder/utilities/PluginUtils'
 
 import itemActionsExt from './itemActionsExt.pug';
@@ -17,4 +14,16 @@ wrap(ItemView, 'render', function (render) {
     }, this);
 
     return render.call(this);
+});
+
+wrap(ItemListWidget, 'render', function (render) {
+    render.call(this);
+    this.$('.g-item-list-link').each((k, v) => {
+        const id = this.collection.get($(v).attr('g-item-cid')).id;
+        $(v).parent().find('.g-view-inline').attr({
+            href: `/#/glance/${id}`,
+            title: 'Open in ParaView Glance'
+        });
+    });
+    return this;
 });
