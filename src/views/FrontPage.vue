@@ -44,7 +44,7 @@ v-app
       .title-ctr Medical Visualization
 
     v-list.mb-4.pa-0.list-ctr
-      v-list-tile.py-2(to="/ct_terms")
+      v-list-tile.py-2(to="/glance")
         v-list-tile-content #[v-list-tile-title.alg-title CT Visualization]
         v-list-tile-action
           v-icon(large) keyboard_arrow_right
