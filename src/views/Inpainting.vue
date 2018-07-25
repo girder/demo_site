@@ -5,7 +5,7 @@ v-app
       v-toolbar(app)
         .body-1.mx-3 Click and drag to mark areas of the image to fill.
         v-spacer
-        v-btn(@click="run", color="primary")
+        v-btn(@click="run", color="primary", :disabled="!enableRun", :loading="!enableRun")
           v-icon.mr-2 play_arrow
           | Run
         v-tooltip(bottom)
@@ -27,27 +27,51 @@ v-app
         v-icon(size="50px") add_a_photo
         .title.mt-3 Drag an image here or click to select one
       input.file-input(type="file", @change="fileSelected")
+
+    v-dialog(persistent, :value="uploading", max-width="600")
+      v-card
+        v-card-title.headline Uploading files
+        v-card-text
+          .subtitle {{this.file && this.file.name}} ({{ imageSize }})
+          v-progress-linear(:value="imageProgress")
+          .subtitle.mt-4 Mask file
+          v-progress-linear(:value="maskProgress")
 </template>
 
 <script>
 import { mapActions } from 'vuex';
+import { sizeFormatter } from '@/utils/mixins';
 
 export default {
+  mixins: [sizeFormatter],
   props: {
-    errorMessage: {
-      default: null,
-      type: String,
+    imageProgress: {
+      type: Number,
+      default: 0,
+    },
+    maskProgress: {
+      type: Number,
+      default: 0,
+    },
+    uploading: {
+      type: Boolean,
+      default: false,
     },
   },
   data: () => ({
     file: null,
-    dragover: false,
-    dropzoneClass: null,
-    imageHeight: 0,
-    imageWidth: 0,
     dragging: false,
     drawSize: 20,
+    dropzoneClass: null,
+    enableRun: true,
+    imageHeight: 0,
+    imageWidth: 0,
   }),
+  computed: {
+    imageSize() {
+      return this.file && this.formatDataSize(this.file.size);
+    },
+  },
   watch: {
     file(val) {
       if (val) {
@@ -98,9 +122,15 @@ export default {
       this.$refs.canvas.getContext('2d').clearRect(0, 0, width, height);
     },
     run() {
-      this.$emit('run', {
+      this.enableRun = false;
+      this.$refs.canvas.toBlob((blob) => {
+        blob.name = 'mask.png';
 
-      });
+        this.$emit('run', {
+          mask: blob,
+          image: this.file,
+        });
+      }, 'image/png');
     },
     ...mapActions('toast', ['showToast']),
   },
