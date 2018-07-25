@@ -52,8 +52,8 @@ export default {
 
       // Kick off processing job
       const job = (await rest.post('inpainting', formEncode({
-        imageFileId: imageFile._id,
-        maskFileId: maskFile._id,
+        imageId: imageFile._id,
+        maskId: maskFile._id,
         outputFolderId: folder._id,
       }))).data;
 

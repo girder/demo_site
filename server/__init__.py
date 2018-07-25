@@ -8,7 +8,7 @@ from bson.objectid import ObjectId
 from girder import events, logger
 from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute
-from girder.api.rest import Resource, filtermodel
+from girder.api.rest import Resource, filtermodel, getCurrentUser
 from girder.constants import AccessType, SortDir, TokenScope
 from girder.models.collection import Collection
 from girder.models.file import File
@@ -26,7 +26,7 @@ from girder.utility.server import staticFile
 from girder_worker.docker.tasks import docker_run
 from girder_worker.docker.transforms import VolumePath
 from girder_worker.docker.transforms.girder import (
-    GirderFolderIdToVolume, GirderUploadVolumePathToFolder)
+    GirderFolderIdToVolume, GirderUploadVolumePathToFolder, GirderFileIdToVolume)
 from PIL import Image
 
 CLEANUP_TOKEN_SCOPE = 'stroke_ct.cleanup'
@@ -80,10 +80,8 @@ def _handleUpload(event):
     except (TypeError, ValueError):
         return
 
-    if not isinstance(reference, dict) or 'photomorph' not in reference:
-        return
-
-    if 'photomorphOrdinal' in reference:
+    if 'photomorph' in reference and 'photomorphOrdinal' in reference:
+        # TODO this is insecure. Should access check the item.
         item = Item().load(file['itemId'], force=True, exc=True)
         item['originalName'] = item['name']
         name = '%05d_%s' % (reference['photomorphOrdinal'], item['name'])
@@ -103,7 +101,6 @@ def _handleUpload(event):
             logger.exception('Failure during photomorph thumbnailing')
 
     elif reference.get('photomorph') and 'resultType' in reference:
-        print('GOT AN UPLOAD', 'photomorphOutputItems.%s' % reference['resultType'])
         Folder().update({'_id': ObjectId(reference['folderId'])}, {
             '$push': {
                 'photomorphOutputItems.%s' % reference['resultType']: {
@@ -112,6 +109,52 @@ def _handleUpload(event):
                 }
             }
         }, multi=False)
+
+    elif reference.get('inpaintedImage'):
+        folder = Folder().load(reference['folderId'], user=getCurrentUser(), level=AccessType.WRITE)
+        if 'inpaintingJobId' in folder:
+            job = Job().load(folder['inpaintingJobId'], force=True)
+            job['inpaintedImageResultId'] = file['_id']
+            Job().save(job)
+
+
+class Inpainting(Resource):
+    def __init__(self):
+        super(Inpainting, self).__init__()
+        self.resourceName = 'inpainting'
+
+        self.route('POST', (), self.runInpainting)
+
+    @access.user
+    @filtermodel(Job)
+    @autoDescribeRoute(
+        Description('Run image inpainting algorithm.')
+        .modelParam('imageId', 'The input image file.', model=File, level=AccessType.READ)
+        .modelParam('maskId', 'The mask file.', model=File, level=AccessType.READ)
+        .modelParam('outputFolderId', 'Output folder.', model=Folder, level=AccessType.WRITE))
+    def runInpainting(self, image, mask, folder):
+        outPath = VolumePath('__out__.jpg')
+        job = docker_run.delay(
+            'zachmullen/inpainting:latest', container_args=[
+                GirderFileIdToVolume(image['_id']),
+                GirderFileIdToVolume(mask['_id']),
+                outPath
+            ], girder_job_title='Inpainting: %s' % image['name'],
+            girder_result_hooks=[
+                GirderUploadVolumePathToFolder(outPath, folder['_id'], upload_kwargs={
+                    'reference': json.dumps({
+                        'inpaintedImage': True,
+                        'folderId': str(folder['_id']),
+                    })
+                })
+            ]).job
+
+        folder['inpaintingJobId'] = job['_id']
+        Folder().save(folder)
+
+        job['inpaintingImageId'] = image['_id']
+        job['inpaintingMaskId'] = mask['_id']
+        return Job().save(job)
 
 
 class Photomorph(Resource):
@@ -410,6 +453,7 @@ def load(info):
     # info['apiRoot'].study = Study()
     # info['apiRoot'].series = Series()
     info['apiRoot'].photomorph = Photomorph()
+    info['apiRoot'].inpainting = Inpainting()
 
     Folder().ensureIndex(('isStudy', {'sparse': True}))
     Folder().ensureIndex(('isPhotomorph', {'sparse': True}))
