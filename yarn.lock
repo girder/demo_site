@@ -8910,9 +8910,9 @@ vuetify@1.0.19:
   version "1.0.19"
   resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-1.0.19.tgz#fb6d123dd1c217795fc2333e912c0ecbed2ed69e"
 
-vuetify@^1.0.9:
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-1.0.17.tgz#646991024b327514b5fc50fb5c34e15451ad14b6"
+vuetify@^1.1.8:
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-1.1.8.tgz#3aef842ddc9b7ec348e7ce273a24f2f8ebb1cea9"
 
 vuex-router-sync@^5.0.0:
   version "5.0.0"
