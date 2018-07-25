@@ -5,6 +5,7 @@ import GlanceItem from '@/routes/GlanceItem';
 import SelectMask from '@/routes/SelectMask';
 import FrontPage from '@/views/FrontPage';
 import PhotomorphListRoute from '@/routes/PhotomorphListRoute';
+import Inpainting from '@/containers/InpaintingContainer';
 // import StudyListContainer from '@/containers/StudyListContainer';
 import UploadPage from '@/views/UploadPage';
 
@@ -29,5 +30,8 @@ export default new Router({
   }, {
     path: '/select_mask/:folderId/item/:itemId',
     component: SelectMask,
+  }, {
+    path: '/inpainting',
+    component: Inpainting,
   }],
 });

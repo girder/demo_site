@@ -34,8 +34,8 @@ v-app
         v-list-tile-action
           v-icon(large) keyboard_arrow_right
       v-divider
-      v-list-tile.py-2(disabled)
-        v-list-tile-content #[v-list-tile-title.alg-title Photo Hole Filling (coming soon)]
+      v-list-tile.py-2(to="/inpainting")
+        v-list-tile-content #[v-list-tile-title.alg-title Photo Hole Filling]
         v-list-tile-action
           v-icon(large) keyboard_arrow_right
 
