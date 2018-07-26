@@ -6,6 +6,7 @@ import SelectMask from '@/routes/SelectMask';
 import FrontPage from '@/views/FrontPage';
 import PhotomorphListRoute from '@/routes/PhotomorphListRoute';
 import Inpainting from '@/containers/InpaintingContainer';
+import InpaintingResultContainer from '@/containers/InpaintingResultContainer';
 // import StudyListContainer from '@/containers/StudyListContainer';
 import UploadPage from '@/views/UploadPage';
 
@@ -33,5 +34,8 @@ export default new Router({
   }, {
     path: '/inpainting',
     component: Inpainting,
+  }, {
+    path: '/inpainting/:jobId',
+    component: InpaintingResultContainer,
   }],
 });

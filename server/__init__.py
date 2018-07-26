@@ -129,8 +129,9 @@ class Inpainting(Resource):
     @filtermodel(Job)
     @autoDescribeRoute(
         Description('Run image inpainting algorithm.')
-        .modelParam('imageId', 'The input image file.', model=File, level=AccessType.READ)
-        .modelParam('maskId', 'The mask file.', model=File, level=AccessType.READ)
+        .modelParam('imageId', 'Input image file.', model=File, level=AccessType.READ,
+                    destName='image')
+        .modelParam('maskId', 'Mask file.', model=File, level=AccessType.READ, destName='mask')
         .modelParam('outputFolderId', 'Output folder.', model=Folder, level=AccessType.WRITE))
     def runInpainting(self, image, mask, folder):
         outPath = VolumePath('__out__.jpg')
