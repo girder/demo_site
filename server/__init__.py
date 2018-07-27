@@ -465,7 +465,8 @@ def load(info):
         'photomorphMaskRect'})
     Item().exposeFields(level=AccessType.READ, fields={
         'isSeries', 'isPhotomorph', 'originalName', 'photomorphTakenDate'})
-    Job().exposeFields(level=AccessType.READ, fields={'photomorphId'})
+    Job().exposeFields(level=AccessType.READ, fields={
+        'photomorphId', 'inpaintingImageId', 'inpaintingMaskId'})
 
     events.bind('model.file.finalizeUpload.after', info['name'], _handleUpload)
     events.bind('model.item.remove', info['name'], _itemDeleted)

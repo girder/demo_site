@@ -3,7 +3,6 @@ v-app
   v-content
     .image-wrapper(v-if="file")
       v-toolbar(app)
-        .body-1.mx-3 Click and drag to mark areas of the image to fill.
         v-spacer
         v-btn(@click="run", color="primary", :disabled="!enableRun", :loading="!enableRun")
           v-icon.mr-2 play_arrow
@@ -19,6 +18,9 @@ v-app
       canvas(ref="canvas", :height="imageHeight", :width="imageWidth", @mousedown="canvasDown",
           @mousemove="canvasMove", @mouseup="canvasUp")
       img(ref="image", @load="imageLoaded", @error="imageLoadError")
+      v-snackbar(bottom, v-model="snackbar", :timeout="10000")
+        | Drag to select areas of the image to fill.
+        v-btn(dark, flat, color="primary", @click="snackbar = false") Got it
 
     .dropzone-wrapper(
         v-else, :class="dropzoneClass", @dragenter="dropzoneClass = 'animate'",
@@ -66,6 +68,7 @@ export default {
     enableRun: true,
     imageHeight: 0,
     imageWidth: 0,
+    snackbar: true,
   }),
   computed: {
     imageSize() {

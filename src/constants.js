@@ -17,5 +17,13 @@ export const ResourceIcons = {
   USER: 'person',
 };
 
+export const JobStatus = {
+  INACTIVE: 0,
+  QUEUED: 1,
+  RUNNING: 2,
+  SUCCESS: 3,
+  ERROR: 4,
+};
+
 export const API_ROOT = process.env.NODE_ENV === 'production' ? '/api/v1' : '//localhost:8080/api/v1';
 export const UPLOAD_CHUNK_SIZE = 1024 * 1024 * 64;
