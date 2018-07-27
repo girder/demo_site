@@ -114,7 +114,7 @@ def _handleUpload(event):
         folder = Folder().load(reference['folderId'], user=getCurrentUser(), level=AccessType.WRITE)
         if 'inpaintingJobId' in folder:
             job = Job().load(folder['inpaintingJobId'], force=True)
-            job['inpaintedImageResultId'] = file['_id']
+            job['inpaintingImageResultId'] = file['_id']
             Job().save(job)
 
 
