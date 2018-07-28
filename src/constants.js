@@ -23,6 +23,7 @@ export const JobStatus = {
   RUNNING: 2,
   SUCCESS: 3,
   ERROR: 4,
+  CANCELED: 5,
 };
 
 export const API_ROOT = process.env.NODE_ENV === 'production' ? '/api/v1' : '//localhost:8080/api/v1';

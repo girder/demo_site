@@ -22,10 +22,10 @@ export default {
     async fetch() {
       this.job = (await rest.get(`job/${this.$route.params.jobId}`)).data;
 
-      if (![JobStatus.SUCCESS, JobStatus.ERROR].includes(this.job.status)) {
+      if (![JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.CANCELED].includes(this.job.status)) {
         this._timeout = window.setTimeout(() => {
           this.fetch();
-        }, 5000);
+        }, 3000);
       }
     },
   },

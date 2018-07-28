@@ -22,8 +22,13 @@ v-app
               v-layout(align-center, justify-center, fill-height,column)
                 v-progress-circular(v-if="jobPending", indeterminate, :size="50",
                     :color="waitColor", :width="6")
-                v-icon(:size="50", v-if="job.status === JobStatus.ERROR", color="error") error
+                v-icon(:size="54", v-if="job.status === JobStatus.ERROR", color="error") error
                 .subtitle.mt-4 {{ statusText }}
+                v-btn.mt-3(v-if="job.status === JobStatus.ERROR", @click="showLog = !showLog")
+                  | {{ showLog ? 'Hide log' : 'Show log' }}
+        v-slide-y-transition
+          code.log-container.px-2(v-show="showLog")
+            pre {{ job.log.join('') }}
         v-card-title.title Result
 </template>
 
@@ -42,6 +47,7 @@ export default {
     imageVisibility: 1,
     maskOpacity: 1,
     JobStatus,
+    showLog: false,
   }),
   computed: {
     statusText() {
@@ -54,7 +60,7 @@ export default {
         case JobStatus.ERROR:
           return 'An error occurred while processing your image.';
         default:
-          return 'Unkown job status';
+          return 'Unknown job status';
       }
     },
     waitColor() {
@@ -69,7 +75,7 @@ export default {
       }
     },
     jobPending() {
-      return ![JobStatus.ERROR, JobStatus.SUCCESS].includes(this.job.status);
+      return ![JobStatus.ERROR, JobStatus.SUCCESS, JobStatus.CANCELED].includes(this.job.status);
     },
   },
   methods: {
@@ -81,6 +87,8 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+$maxWidth = 800px
+
 .bg-grey
   background-color #eee
 
@@ -88,11 +96,11 @@ export default {
   display block
 
 .input-img,.result-image
-  max-width 800px
+  max-width $maxWidth
   vertical-align middle
 
 .result-placeholder
-  width 800px
+  width $maxWidth
   max-width 100vw
   height 300px
   background-color #ddd
@@ -111,4 +119,12 @@ export default {
   left 0
   right 0
   background-color black
+
+.log-container
+  border-radius 0
+  box-shadow none
+  overflow scroll
+  max-height 300px
+  width $maxWidth
+  max-width 100vw
 </style>
