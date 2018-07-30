@@ -190,6 +190,7 @@ $img = linear-gradient(
 .image-wrapper
   overflow-x scroll
   position relative
+  text-align center
 
   img
     z-index -1

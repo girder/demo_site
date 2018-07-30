@@ -9,9 +9,9 @@ v-app
             img.mask-img(:src="downloadUrl(job.inpaintingMaskId)", :style="{opacity: maskOpacity}")
             .fader(:style="{opacity: 1 - imageVisibility}")
         v-card-title.title Image & Mask
-        v-slider.mx-3(:min="0", :max="1", :step="0.01", v-model="imageVisibility",
+        v-slider.mx-4(:min="0", :max="1", :step="0.01", v-model="imageVisibility",
             prepend-icon="brightness_6", inverse-label)
-        v-slider.mx-3(:min="0", :max="1", :step="0.01", v-model="maskOpacity",
+        v-slider.mx-4(:min="0", :max="1", :step="0.01", v-model="maskOpacity",
             prepend-icon="opacity")
       v-card.my-4
         v-card-media
@@ -27,9 +27,14 @@ v-app
                 v-btn.mt-3(v-if="job.status === JobStatus.ERROR", @click="showLog = !showLog")
                   | {{ showLog ? 'Hide log' : 'Show log' }}
         v-slide-y-transition
-          code.log-container.px-2(v-show="showLog")
-            pre {{ job.log.join('') }}
-        v-card-title.title Result
+          code.log-container.px-2(v-if="showLog")
+            pre {{ job.log && job.log.join('') }}
+        v-card-title.title
+          | Result
+          v-spacer
+          v-btn(v-if="job.inpaintingImageResultId", icon, flat, large, color="primary",
+              :href="downloadUrl(job.inpaintingImageResultId)")
+            v-icon save_alt
 </template>
 
 <script>
@@ -59,6 +64,8 @@ export default {
           return 'Your image is being processed, please wait...';
         case JobStatus.ERROR:
           return 'An error occurred while processing your image.';
+        case JobStatus.SUCCESS:
+          return 'Job succeeded';
         default:
           return 'Unknown job status';
       }
