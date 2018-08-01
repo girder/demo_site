@@ -1,5 +1,6 @@
 import trackingImg from '@/assets/tracking_1.jpg';
 import ctImg from '@/assets/ct_visualization.png';
+import inpaintingImg from '@/assets/inpainting.png';
 
 const demos = {
   vision: [{
@@ -12,7 +13,7 @@ const demos = {
     buttonIcon: 'play_circle_filled',
   }, {
     title: 'Timelapse Video Creation',
-    description: 'Upload a sequence of images taken over a period of time, and this ' +
+    description: 'Upload a sequence of images taken over a period of time, and our ' +
                  'algorithm will stitch them together into a video.',
     imageUrl: 'none',
     to: '/timelapse',
@@ -21,9 +22,8 @@ const demos = {
   }, {
     title: 'Image Inpainting',
     description: 'This workflow allows you to erase areas of an image and have a neural ' +
-                 'network intelligently fill in that area. Useful for touching up small ' +
-                 'parts of your photos.',
-    imageUrl: 'none',
+                 'network intelligently fill in that area.',
+    imageUrl: inpaintingImg,
     to: '/inpainting',
     buttonText: 'Try it out',
     buttonIcon: 'image',

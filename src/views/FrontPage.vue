@@ -6,19 +6,19 @@ v-app
         img.kw-logo(src="@/assets/kw_AaaS.svg")
 
     .kw-info-ctr.py-5
-      .headline.
-        Kitware is a leader in scientific software research, development, and consulting for
+      .text-xs-center.headline.banner-headline.
+        #[b Kitware] is a leader in scientific software research, development, and consulting for
         medical, computer vision, high-performance computing, informatics, and numerous other
         domains.
       .text-xs-center.mt-2
-        v-btn(outline, large, color="white", href="https://www.kitware.com") Learn more
+        v-btn.mt-3(outline, large, color="white", href="https://www.kitware.com") Learn more
 
     .banner-ctr
       .banner-bg(:style="{'background-image': `url(${require('@/assets/CV_Band.jpg')})`}")
       .title-ctr Computer Vision
 
     v-layout.demos-list(row, justify-center, wrap)
-      demo-link.mx-4(v-for="(demo, i) in demos.vision", :key="i", v-bind="demo")
+      demo-link.mx-4.mb-2(v-for="(demo, i) in demos.vision", :key="i", v-bind="demo")
 
     .banner-ctr
       .banner-bg(:style="{'background-image': `url(${require('@/assets/Med_Band.jpg')})`}")
@@ -49,10 +49,14 @@ export default {
   height 140px
 
 .kw-info-ctr
-  padding-left 5%
-  padding-right 5%
+  padding-left 25px
+  padding-right 25px
   background-color #313c42
   color white
+
+.banner-headline
+  max-width 860px
+  margin 0 auto
 
 .banner-ctr
   width 100%
@@ -81,7 +85,7 @@ export default {
     text-overflow ellipsis
 
 .demos-list
-  margin -60px 0 40px
+  margin -30px 0 50px
   z-index 2
   position relative
 </style>
