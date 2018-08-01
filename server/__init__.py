@@ -26,7 +26,7 @@ from girder.utility.server import staticFile
 from girder_worker.docker.tasks import docker_run
 from girder_worker.docker.transforms import VolumePath
 from girder_worker.docker.transforms.girder import (
-    GirderFolderIdToVolume, GirderUploadVolumePathToFolder, GirderFileIdToVolume)
+    GirderFolderIdToVolume, GirderUploadVolumePathToFolder, GirderFileIdToVolume, ProgressPipe)
 from PIL import Image
 
 CLEANUP_TOKEN_SCOPE = 'stroke_ct.cleanup'
@@ -130,17 +130,20 @@ class Inpainting(Resource):
     @autoDescribeRoute(
         Description('Run image inpainting algorithm.')
         .modelParam('imageId', 'Input image file.', model=File, level=AccessType.READ,
-                    destName='image')
-        .modelParam('maskId', 'Mask file.', model=File, level=AccessType.READ, destName='mask')
-        .modelParam('outputFolderId', 'Output folder.', model=Folder, level=AccessType.WRITE))
+                    destName='image', paramType='formData')
+        .modelParam('maskId', 'Mask file.', model=File, level=AccessType.READ, destName='mask',
+                    paramType='formData')
+        .modelParam('outputFolderId', 'Output folder.', model=Folder, level=AccessType.WRITE,
+                    paramType='formData'))
     def runInpainting(self, image, mask, folder):
         outPath = VolumePath('__out__.jpg')
         job = docker_run.delay(
             'zachmullen/inpainting:latest', container_args=[
                 GirderFileIdToVolume(image['_id']),
                 GirderFileIdToVolume(mask['_id']),
-                outPath
-            ], girder_job_title='Inpainting: %s' % image['name'],
+                outPath,
+            #    '--progress-pipe', ProgressPipe()
+            ], pull_image=False, girder_job_title='Inpainting: %s' % image['name'],
             girder_result_hooks=[
                 GirderUploadVolumePathToFolder(outPath, folder['_id'], upload_kwargs={
                     'reference': json.dumps({
@@ -466,7 +469,7 @@ def load(info):
     Item().exposeFields(level=AccessType.READ, fields={
         'isSeries', 'isPhotomorph', 'originalName', 'photomorphTakenDate'})
     Job().exposeFields(level=AccessType.READ, fields={
-        'photomorphId', 'inpaintingImageId', 'inpaintingMaskId'})
+        'photomorphId', 'inpaintingImageId', 'inpaintingMaskId', 'inpaintingImageResultId'})
 
     events.bind('model.file.finalizeUpload.after', info['name'], _handleUpload)
     events.bind('model.item.remove', info['name'], _itemDeleted)
