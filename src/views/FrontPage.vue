@@ -55,7 +55,7 @@ export default {
   color white
 
 .banner-headline
-  max-width 860px
+  max-width 980px
   margin 0 auto
 
 .banner-ctr
