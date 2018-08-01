@@ -25,7 +25,7 @@ v-app
       .title-ctr Medical Visualization
 
     v-layout.demos-list(row, justify-center, wrap)
-      demo-link.mx-4(v-for="(demo, i) in demos.medical", :key="i", v-bind="demo")
+      demo-link.mx-4.mb-2(v-for="(demo, i) in demos.medical", :key="i", v-bind="demo")
 
     hr.mx-5.mb-2(color="#ddd")
     .text-xs-center.mb-4
