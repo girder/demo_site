@@ -23,22 +23,6 @@ const demos = {
     href: 'https://vimeo.com/97850118',
     buttonText: 'Watch',
     buttonIcon: VIDEO_ICON,
-  }, {
-    title: 'Timelapse Video Creation',
-    description: 'Upload a sequence of images taken over a period of time, and our ' +
-                 'algorithm will stitch them together into a video.',
-    imageUrl: 'none',
-    to: '/timelapse',
-    buttonText: 'Create your own',
-    buttonIcon: 'av_timer',
-  }, {
-    title: 'Image Inpainting',
-    description: 'This workflow allows you to erase areas of an image and have a neural ' +
-                 'network intelligently fill in that area.',
-    imageUrl: inpaintingImg,
-    to: '/inpainting',
-    buttonText: 'Try it out',
-    buttonIcon: 'image',
   }],
   medical: [{
     title: 'Medical Data Visualization',
@@ -68,6 +52,23 @@ const demos = {
                  'prior to injury and the changes induced by the injury.',
     enabled: false,
     imageUrl: 'none',
+  }],
+  cloud: [{
+    title: 'Timelapse Video Creation',
+    description: 'Upload a sequence of images taken over a period of time, and our ' +
+                 'algorithm will stitch them together into a video.',
+    imageUrl: 'none',
+    to: '/timelapse',
+    buttonText: 'Create your own',
+    buttonIcon: 'av_timer',
+  }, {
+    title: 'Image Inpainting',
+    description: 'This workflow allows you to erase areas of an image and have a neural ' +
+                 'network intelligently fill in that area.',
+    imageUrl: inpaintingImg,
+    to: '/inpainting',
+    buttonText: 'Try it out',
+    buttonIcon: 'image',
   }],
 };
 
