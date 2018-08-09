@@ -2,6 +2,7 @@ import trackingImg from '@/assets/tracking_1.jpg';
 import ctImg from '@/assets/ct_visualization.png';
 import inpaintingImg from '@/assets/inpainting.png';
 import recognitionImg from '@/assets/recognition.png';
+import surgicalImg from '@/assets/surgical.png';
 
 const VIDEO_ICON = 'play_circle_filled';
 
@@ -47,6 +48,14 @@ const demos = {
     to: '/glance',
     buttonText: 'Try it out',
     buttonIcon: 'keyboard_arrow_right',
+  }, {
+    title: 'Surgical Simulation',
+    description: 'Using computer-tracked laparoscopic hardware and an augmented reality display,' +
+                 ' surgical simulation can reduce surgeon training time, costs, and risks.',
+    imageUrl: surgicalImg,
+    href: 'https://vimeo.com/97850118',
+    buttonText: 'Watch',
+    buttonIcon: VIDEO_ICON,
   }, {
     title: 'Stroke Assessment',
     description: 'Analyze intracranial vasculature in acute stroke CT scans to identify the ' +
