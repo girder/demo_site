@@ -15,14 +15,14 @@ v-app
 
     .banner-ctr
       .banner-bg(:style="{'background-image': `url(${require('@/assets/CV_Band.jpg')})`}")
-      .title-ctr Computer Vision
+      .title-ctr Computer Vision and Machine Learning
 
     v-layout.demos-list(row, justify-center, wrap)
       demo-link.mx-4.mb-2(v-for="(demo, i) in demos.vision", :key="i", v-bind="demo")
 
     .banner-ctr
       .banner-bg(:style="{'background-image': `url(${require('@/assets/Med_Band.jpg')})`}")
-      .title-ctr Medical Visualization
+      .title-ctr Biomedical Visualization and Analysis
 
     v-layout.demos-list(row, justify-center, wrap)
       demo-link.mx-4.mb-2(v-for="(demo, i) in demos.medical", :key="i", v-bind="demo")

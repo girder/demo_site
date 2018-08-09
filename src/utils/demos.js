@@ -29,20 +29,23 @@ const demos = {
     buttonIcon: 'image',
   }],
   medical: [{
-    title: 'CT Visualization',
-    description: 'Use ParaView Glance to visualize a variety of medical and other data.',
+    title: 'Medical Data Visualization',
+    description: 'Use ParaView Glance to visualize a variety of 3D medical images and ' +
+                 'data in your browser.',
     imageUrl: ctImg,
     to: '/glance',
     buttonText: 'Try it out',
     buttonIcon: 'keyboard_arrow_right',
   }, {
     title: 'Stroke Assessment',
-    description: 'This algorithm will assess outcomes of stroke patients.',
+    description: 'Analyze intracranial vasculature in acute stroke CT scans to identify the ' +
+                 'presence of collateral vessels that support recovery.',
     enabled: false,
     imageUrl: 'none',
   }, {
-    title: 'Traumatic Brain Injury',
-    description: 'Traumatic Brain Injury visualization workflow.',
+    title: 'Tumors & TBI',
+    description: 'Upload a T1 MRI scan and have our system estimate the brain\'s appearance ' +
+                 'prior to injury and the changes induced by the injury.',
     enabled: false,
     imageUrl: 'none',
   }],
