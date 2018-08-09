@@ -1,6 +1,9 @@
 import trackingImg from '@/assets/tracking_1.jpg';
 import ctImg from '@/assets/ct_visualization.png';
 import inpaintingImg from '@/assets/inpainting.png';
+import recognitionImg from '@/assets/recognition.png';
+
+const VIDEO_ICON = 'play_circle_filled';
 
 const demos = {
   vision: [{
@@ -10,7 +13,15 @@ const demos = {
     imageUrl: trackingImg,
     href: 'https://vimeo.com/90767973',
     buttonText: 'Watch',
-    buttonIcon: 'play_circle_filled',
+    buttonIcon: VIDEO_ICON,
+  }, {
+    title: 'Activity Recognition',
+    description: 'Complex activity recognition using Granger Constrained DBN (GDBN) in sports ' +
+                 'and surveillance video.',
+    imageUrl: recognitionImg,
+    href: 'https://vimeo.com/97850118',
+    buttonText: 'Watch',
+    buttonIcon: VIDEO_ICON,
   }, {
     title: 'Timelapse Video Creation',
     description: 'Upload a sequence of images taken over a period of time, and our ' +
