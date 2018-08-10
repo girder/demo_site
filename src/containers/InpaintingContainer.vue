@@ -1,22 +1,34 @@
 <template lang="pug">
-inpainting(@run="run", :image-progress="imageProgress", :mask-progress="maskProgress",
-    :uploading="uploading")
+div
+  inpainting(v-if="isLoggedIn", @run="run", :image-progress="imageProgress",
+      :mask-progress="maskProgress", :uploading="uploading")
+  auth-container(v-else, :description="description", title="Image Inpainting",
+      endpoint="inpainting/example")
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import rest, { formEncode } from '@/rest';
+import AuthContainer from '@/containers/AuthContainer';
 import Inpainting from '@/views/Inpainting';
 import { uploadFile } from '@/utils/upload';
 
+const description = `This application allows you to select a photo from your device, draw on
+the parts of it you want the algorithm to fill in, and then upload it and run the algorithm
+on the server. You must log in or register a user to proceed.`;
+
 export default {
-  components: { Inpainting },
+  components: { AuthContainer, Inpainting },
   data: () => ({
+    description,
     imageProgress: 0,
     maskProgress: 0,
     uploading: false,
   }),
-  computed: mapState('auth', ['user']),
+  computed: {
+    ...mapState('auth', ['user']),
+    ...mapGetters('auth', ['isLoggedIn']),
+  },
   methods: {
     async run({ image, mask }) {
       this.uploading = true;

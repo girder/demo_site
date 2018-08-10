@@ -123,7 +123,35 @@ class Inpainting(Resource):
         super(Inpainting, self).__init__()
         self.resourceName = 'inpainting'
 
+        self.route('GET', ('example',), self.listExamples)
+        self.route('PUT', (':id', 'examples_folder'), self.setExamplesFolder)
         self.route('POST', (), self.runInpainting)
+
+    @access.admin
+    @autoDescribeRoute(
+        Description('Set the folder containing site-wide examples.')
+        .modelParam('id', 'The ID of the folder containing the examples as items.',
+                    model=Folder, level=AccessType.ADMIN)
+        .param('enabled', 'Whether this is the example folder.', dataType='boolean',
+               default=True, required=False)
+    )
+    def setExamplesFolder(self, folder, enabled):
+        op = '$set' if enabled else '$unset'
+        Folder().update({'_id': folder['_id']}, {op: {
+            'inpaintingExampleFolder': True
+        }}, multi=False)
+        return enabled
+
+    @access.public
+    @filtermodel(Item)
+    @autoDescribeRoute(
+        Description('List example inpainting images as items.')
+    )
+    def listExamples(self):
+        folder = Folder().findOne({'inpaintingExampleFolder': True})
+        if folder is None:
+            return []
+        return list(Folder().childItems(folder))
 
     @access.user
     @filtermodel(Job)
@@ -195,6 +223,8 @@ class Photomorph(Resource):
     )
     def listExamples(self):
         folder = Folder().findOne({'photomorphExampleFolder': True})
+        if folder is None:
+            return []
         return list(Folder().childItems(folder))
 
     @access.admin(scope=CLEANUP_TOKEN_SCOPE)
@@ -462,6 +492,7 @@ def load(info):
     Folder().ensureIndex(('isStudy', {'sparse': True}))
     Folder().ensureIndex(('isPhotomorph', {'sparse': True}))
     Folder().ensureIndex(('photomorphExampleFolder', {'sparse': True}))
+    Folder().ensureIndex(('inpaintingExampleFolder', {'sparse': True}))
     Folder().exposeFields(level=AccessType.READ, fields={
         'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality', 'photomorphJobId',
         'isPhotomorph', 'photomorphInputFolderId', 'photomorphOutputItems', 'photomorphJobStatus',

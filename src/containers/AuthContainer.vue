@@ -6,20 +6,17 @@ v-app
   v-container(xs-12)
     v-layout(row, wrap)
       v-flex.pa-2(xs-12, md6, lg8)
-        .headline Time-Lapse Video Creation
-        .body-1.mt-3.
-          You can use this service to select a set of photos, sort them into the proper
-          chronological order, and upload them to the server where we will run advanced
-          image processing algorithms on them to stitch them into a smooth time-lapse video.
-          You must log in or register a new user to proceed.
-        .title.mt-5 Sample Videos
+        .headline {{ title }}
+        .body-1.mt-3 {{ description }}
+
+        .title.mt-5 Examples
         hr.mb-3.mt-1
         v-flex.text-xs-center(v-if="loadingExamples")
           v-progress-circular.my-4(indeterminate, color="primary", size="100")
         v-carousel(v-else)
-          v-carousel-item.timelapse-carousel-item(v-for="(item, i) in exampleItems", :key="i")
+          v-carousel-item.showcase-carousel-item(v-for="(item, i) in exampleItems", :key="i")
             v-container(fill-height, justify-center, align-center)
-              img.timelapse-img(:src="videoUrl(item)")
+              img.showcase-img(:src="videoUrl(item)")
       v-flex.pa-2(xs-12, md6, lg4)
         v-card
           v-tabs(v-model="activeTab", color="primary", slider-color="yellow", dark)
@@ -54,6 +51,20 @@ const emptyRegisterErrors = () => ({
 export default {
   components: { LoginForm, RegisterForm },
   mixins: [fetchingContainer],
+  props: {
+    description: {
+      type: String,
+      required: true,
+    },
+    endpoint: {
+      type: String,
+      required: true,
+    },
+    title: {
+      type: String,
+      required: true,
+    },
+  },
   data: () => ({
     loginErrorMessage: '',
     loginInProgress: false,
@@ -68,7 +79,7 @@ export default {
       this.loadingExamples = true;
       // TODO we should have an endpoint for faster lookup
       try {
-        this.exampleItems = (await rest.get('photomorph/example')).data;
+        this.exampleItems = (await rest.get(this.endpoint)).data;
       } finally {
         this.loadingExamples = false;
       }
@@ -115,9 +126,9 @@ export default {
 <style lang="stylus" scoped>
 .tb-logo
   height 48px
-.timelapse-carousel-item
+.showcase-carousel-item
   background-color #444
-.timelapse-img
+.showcase-img
   max-width 100%
   max-height 100%
 </style>
