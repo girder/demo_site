@@ -171,7 +171,7 @@ class Inpainting(Resource):
                 GirderFileIdToVolume(mask['_id']),
                 outPath,
             #    '--progress-pipe', ProgressPipe()
-            ], pull_image=False, girder_job_title='Inpainting: %s' % image['name'],
+            ], girder_job_title='Inpainting: %s' % image['name'],
             girder_result_hooks=[
                 GirderUploadVolumePathToFolder(outPath, folder['_id'], upload_kwargs={
                     'reference': json.dumps({
