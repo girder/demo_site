@@ -1,16 +1,14 @@
 <template lang="pug">
-v-card(width="400px")
+v-card.flexcard(width="400px")
   v-card-title.py-2.px-3(primary-title)
     h3.headline {{ title }}
   v-card-media.grey-bg(:src="imageUrl", height="180px")
-  .body-1.py-2.px-3 {{ description }}
+  v-card-text.grow.body-1.py-2.px-3 {{ description }}
   v-card-actions
     v-spacer
     v-btn.mr-1(v-if="enabled", color="primary", :to="to", :href="href",
-        :target="href ? '_blank' : null")
-      .mr-3 {{ buttonText }}
-      v-icon {{ buttonIcon }}
-    v-btn(v-else, disabled) Coming soon
+        :target="href ? '_blank' : null", flat) {{ buttonText }}
+    v-btn(v-else, disabled, flat) Coming soon
 </template>
 
 <script>
@@ -56,7 +54,7 @@ export default {
 .grey-bg
   background-color #d5d5d5
 
-.coming-soon
-  color #999
-  vertical-align top
+.flexcard
+  display flex
+  flex-direction column
 </style>
