@@ -3,6 +3,8 @@ import ctImg from '@/assets/ct_visualization.png';
 import inpaintingImg from '@/assets/inpainting.png';
 import recognitionImg from '@/assets/recognition.png';
 import surgicalImg from '@/assets/surgical.png';
+import strokeImg from '@/assets/Stroke.jpg';
+import tbiImg from '@/assets/TBI.jpg';
 
 const VIDEO_ICON = 'play_circle_filled';
 
@@ -45,13 +47,13 @@ const demos = {
     description: 'Analyze intracranial vasculature in acute stroke CT scans to identify the ' +
                  'presence of collateral vessels that support recovery.',
     enabled: false,
-    imageUrl: 'none',
+    imageUrl: strokeImg,
   }, {
-    title: 'Tumors & TBI',
+    title: 'Tumors & Traumatic Brain Injury',
     description: 'Upload a T1 MRI scan and have our system estimate the brain\'s appearance ' +
                  'prior to injury and the changes induced by the injury.',
     enabled: false,
-    imageUrl: 'none',
+    imageUrl: tbiImg,
   }],
   cloud: [{
     title: 'Timelapse Video Creation',

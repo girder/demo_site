@@ -1,16 +1,16 @@
 <template lang="pug">
 v-card(width="400px")
   v-card-title.py-2.px-3(primary-title)
-    h3.headline
-      | {{ title }}
-      span.body-2.ml-1.coming-soon(v-if="!enabled") (coming soon)
+    h3.headline {{ title }}
   v-card-media.grey-bg(:src="imageUrl", height="180px")
   .body-1.py-2.px-3 {{ description }}
-  v-card-actions(v-if="enabled")
+  v-card-actions
     v-spacer
-    v-btn.mr-1(color="primary", :to="to", :href="href", :target="href ? '_blank' : null")
+    v-btn.mr-1(v-if="enabled", color="primary", :to="to", :href="href",
+        :target="href ? '_blank' : null")
       .mr-3 {{ buttonText }}
       v-icon {{ buttonIcon }}
+    v-btn(v-else, disabled) Coming soon
 </template>
 
 <script>
