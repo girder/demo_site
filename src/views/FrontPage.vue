@@ -1,9 +1,9 @@
 <template lang="pug">
 v-app
   v-content
-    v-toolbar(height="100px")
+    v-toolbar(height="90px")
       v-toolbar-title
-        img.kw-logo(src="@/assets/kw_AaaS.svg")
+        img.kw-logo(src="@/assets/KWLogo.svg")
 
     .kw-info-ctr.py-5
       .text-xs-center.headline.banner-headline.
@@ -53,7 +53,7 @@ export default {
 
 <style lang="stylus" scoped>
 .kw-logo
-  height 140px
+  height 70px
 
 .kw-info-ctr
   padding-left 25px
