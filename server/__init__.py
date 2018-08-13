@@ -164,7 +164,8 @@ class Inpainting(Resource):
         .modelParam('outputFolderId', 'Output folder.', model=Folder, level=AccessType.WRITE,
                     paramType='formData'))
     def runInpainting(self, image, mask, folder):
-        outPath = VolumePath('__out__.jpg')
+        basename = os.path.splitext(image['name'])[0]
+        outPath = VolumePath(basename + '_result.jpg')
         job = docker_run.delay(
             'zachmullen/inpainting:latest', container_args=[
                 GirderFileIdToVolume(image['_id']),
