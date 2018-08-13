@@ -1,8 +1,8 @@
 import trackingImg from '@/assets/tracking_1.jpg';
 import ctImg from '@/assets/ct_visualization.png';
-import inpaintingImg from '@/assets/inpainting.png';
+import inpaintingImg from '@/assets/inpainting.jpg';
 import recognitionImg from '@/assets/recognition.png';
-import surgicalImg from '@/assets/surgical.png';
+import surgicalImg from '@/assets/surgical.jpg';
 import strokeImg from '@/assets/Stroke.jpg';
 import tbiImg from '@/assets/TBI.jpg';
 
