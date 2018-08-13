@@ -20,8 +20,8 @@ v-app
                 :src="downloadUrl(job.inpaintingImageResultId)")
             .result-placeholder(v-else)
               v-layout(align-center, justify-center, fill-height,column)
-                v-progress-circular(v-if="jobPending", indeterminate, :size="50",
-                    :color="waitColor", :width="6")
+                v-progress-circular(v-if="jobPending", :indeterminate="progressPercent < 0",
+                    :size="50", :color="waitColor", :width="6", :value="progressPercent")
                 v-icon(:size="54", v-if="job.status === JobStatus.ERROR", color="error") error
                 .subtitle.mt-4 {{ statusText }}
                 v-btn.mt-3(v-if="job.status === JobStatus.ERROR", @click="showLog = !showLog")
@@ -61,6 +61,9 @@ export default {
         case JobStatus.QUEUED:
           return 'Your image is waiting in the job queue.';
         case JobStatus.RUNNING:
+          if (this.job.progress && this.job.progress.message) {
+            return this.job.progress.message;
+          }
           return 'Your image is being processed, please wait...';
         case JobStatus.ERROR:
           return 'An error occurred while processing your image.';
@@ -83,6 +86,13 @@ export default {
     },
     jobPending() {
       return ![JobStatus.ERROR, JobStatus.SUCCESS, JobStatus.CANCELED].includes(this.job.status);
+    },
+    progressPercent() {
+      if (!this.job.progress) {
+        return -1;
+      }
+      const { current, total } = this.job.progress;
+      return Math.round((100 * current) / total);
     },
   },
   methods: {
