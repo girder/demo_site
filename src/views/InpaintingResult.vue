@@ -21,7 +21,8 @@ v-app
             .result-placeholder(v-else)
               v-layout(align-center, justify-center, fill-height,column)
                 v-progress-circular(v-if="jobPending", :indeterminate="progressPercent < 0",
-                    :size="50", :color="waitColor", :width="6", :value="progressPercent")
+                    :size="50", :color="waitColor", :width="6", :value="progressPercent",
+                    :rotate="-90")
                 v-icon(:size="54", v-if="job.status === JobStatus.ERROR", color="error") error
                 .subtitle.mt-4 {{ statusText }}
                 v-btn.mt-3(v-if="job.status === JobStatus.ERROR", @click="showLog = !showLog")
