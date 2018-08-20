@@ -14,6 +14,13 @@ v-app
         v-btn.mt-3(outline, large, color="white", href="https://www.kitware.com") Learn more
 
     .banner-ctr
+      .banner-bg(:style="{'background-image': `url(${require('@/assets/Cloud_Band.jpg')})`}")
+      .title-ctr Cloud Algorithms
+
+    v-layout.demos-list(row, justify-center, wrap)
+      demo-link.mx-4.mb-2(v-for="(demo, i) in demos.cloud", :key="i", v-bind="demo")
+
+    .banner-ctr
       .banner-bg(:style="{'background-image': `url(${require('@/assets/CV_Band.jpg')})`}")
       .title-ctr Computer Vision and Machine Learning
 
@@ -26,13 +33,6 @@ v-app
 
     v-layout.demos-list(row, justify-center, wrap)
       demo-link.mx-4.mb-2(v-for="(demo, i) in demos.medical", :key="i", v-bind="demo")
-
-    .banner-ctr
-      .banner-bg(:style="{'background-image': `url(${require('@/assets/Cloud_Band.jpg')})`}")
-      .title-ctr Cloud Algorithms
-
-    v-layout.demos-list(row, justify-center, wrap)
-      demo-link.mx-4.mb-2(v-for="(demo, i) in demos.cloud", :key="i", v-bind="demo")
 
     hr.mx-5.mb-2(color="#ddd")
     .text-xs-center.mb-4
