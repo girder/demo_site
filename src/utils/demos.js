@@ -39,7 +39,7 @@ const demos = {
     description: 'Using computer-tracked laparoscopic hardware and an augmented reality display,' +
                  ' surgical simulation can reduce surgeon training time, costs, and risks.',
     imageUrl: surgicalImg,
-    href: 'https://vimeo.com/97850118',
+    href: 'https://vimeo.com/191839695',
     buttonText: 'Watch',
     buttonIcon: VIDEO_ICON,
   }, {
