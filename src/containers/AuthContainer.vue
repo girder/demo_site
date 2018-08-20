@@ -13,7 +13,7 @@ v-app
         hr.mb-3.mt-1
         v-flex.text-xs-center(v-if="loadingExamples")
           v-progress-circular.my-4(indeterminate, color="primary", size="100")
-        v-carousel(v-else)
+        v-carousel(v-else, :interval="3000")
           v-carousel-item.showcase-carousel-item(v-for="(item, i) in exampleItems", :key="i")
             v-container(fill-height, justify-center, align-center)
               img.showcase-img(:src="videoUrl(item)")
