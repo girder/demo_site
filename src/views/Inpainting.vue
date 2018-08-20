@@ -1,7 +1,7 @@
 <template lang="pug">
 v-app
   v-content
-    .image-wrapper(v-if="file")
+    .image-wrapper(v-if="file || imageId")
       v-toolbar(app)
         v-spacer
         v-btn(@click="run", color="primary", :disabled="!enableRun", :loading="!enableRun")
@@ -12,12 +12,12 @@ v-app
             v-icon delete_forever
           | Reset selection
         v-tooltip(bottom)
-          v-btn(icon, slot="activator", @click="file = null")
+          v-btn(icon, slot="activator", @click="cancelImage")
             v-icon arrow_back
           | Choose new file
       canvas(ref="canvas", :height="imageHeight", :width="imageWidth", @mousedown="canvasDown",
           @mousemove="canvasMove", @mouseup="canvasUp")
-      img(ref="image", @load="imageLoaded", @error="imageLoadError")
+      img(@load="imageLoaded", @error="imageLoadError", :src="imageSrc")
       v-snackbar(bottom, v-model="snackbar", :timeout="10000")
         | Drag to select areas of the image to fill.
         v-btn(dark, flat, color="primary", @click="snackbar = false") Got it
@@ -42,6 +42,7 @@ v-app
 
 <script>
 import { mapActions } from 'vuex';
+import { getApiUrl } from '@/rest';
 import { sizeFormatter } from '@/utils/mixins';
 
 export default {
@@ -59,9 +60,18 @@ export default {
       type: Boolean,
       default: false,
     },
+    imageId: {
+      type: String,
+      default: null,
+    },
+    maskId: {
+      type: String,
+      default: null,
+    },
   },
   data: () => ({
     file: null,
+    dataUrl: null,
     dragging: false,
     drawSize: 20,
     dropzoneClass: null,
@@ -74,19 +84,29 @@ export default {
     imageSize() {
       return this.file && this.formatDataSize(this.file.size);
     },
+    imageSrc() {
+      if (this.imageId) {
+        return `${getApiUrl()}/file/${this.imageId}/download`;
+      }
+      return this.dataUrl;
+    },
   },
   watch: {
     file(val) {
       if (val) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          this.$refs.image.src = e.target.result;
+          this.dataUrl = e.target.result;
         };
         reader.readAsDataURL(val);
       }
     },
   },
   methods: {
+    cancelImage() {
+      this.file = null;
+      this.$emit('cancelImage');
+    },
     canvasDown({ offsetX, offsetY }) {
       this.dragging = true;
       this.erase(offsetX, offsetY);

@@ -3,18 +3,26 @@ inpainting-result(v-if="job", :job="job", @refresh="fetch")
 </template>
 
 <script>
+import Vue from 'vue';
 import { JobStatus } from '@/constants';
 import rest from '@/rest';
-import { fetchingContainer, fetchingRoute } from '@/utils/mixins';
+import { fetchingContainer } from '@/utils/mixins';
 import InpaintingResult from '@/views/InpaintingResult';
 
 export default {
   components: { InpaintingResult },
-  mixins: [fetchingContainer, fetchingRoute],
+  mixins: [fetchingContainer],
   data: () => ({
     _timeout: null,
     job: null,
   }),
+  watch: {
+    $route() {
+      Vue.nextTick().then(() => {
+        this.fetch();
+      });
+    },
+  },
   destroyed() {
     window.clearTimeout(this._timeout);
   },

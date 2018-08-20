@@ -1,7 +1,8 @@
 <template lang="pug">
 div
   inpainting(v-if="isLoggedIn", @run="run", :image-progress="imageProgress",
-      :mask-progress="maskProgress", :uploading="uploading")
+      :mask-progress="maskProgress", :uploading="uploading", :mask-id="maskId",
+      :image-id="imageId", @cancelImage="cancelImage")
   auth-container(v-else, :description="description", title="Image Inpainting",
       endpoint="inpainting/example")
 </template>
@@ -19,17 +20,25 @@ on the server. You must log in or register a user to proceed.`;
 
 export default {
   components: { AuthContainer, Inpainting },
-  data: () => ({
-    description,
-    imageProgress: 0,
-    maskProgress: 0,
-    uploading: false,
-  }),
+  data() {
+    return {
+      description,
+      imageProgress: 0,
+      maskProgress: 0,
+      uploading: false,
+      imageId: this.$route.query.image,
+      maskId: this.$route.query.mask,
+    };
+  },
   computed: {
     ...mapState('auth', ['user']),
     ...mapGetters('auth', ['isLoggedIn']),
   },
   methods: {
+    cancelImage() {
+      this.imageId = null;
+      this.maskId = null;
+    },
     async run({ image, mask }) {
       this.uploading = true;
 
@@ -40,9 +49,13 @@ export default {
         name: `Inpainting ${new Date().toISOString()}`,
       }))).data;
 
-      // Upload the image and mask to the new folder
-      const [imageFile, maskFile] = await Promise.all([
-        uploadFile(image, folder, {
+      let imagePromise;
+      if (this.imageId) {
+        // If this is a re-run, just reuse existing input image
+        imagePromise = Promise.resolve({ _id: this.imageId });
+        this.imageProgress = 100;
+      } else {
+        imagePromise = uploadFile(image, folder, {
           progress: (p) => {
             if (p.indeterminate) {
               this.imageProgress = -1;
@@ -50,17 +63,19 @@ export default {
               this.imageProgress = 100 * (p.current / p.total);
             }
           },
-        }),
-        uploadFile(mask, folder, {
-          progress: (p) => {
-            if (p.indeterminate) {
-              this.maskProgress = -1;
-            } else {
-              this.maskProgress = 100 * (p.current / p.total);
-            }
-          },
-        }),
-      ]);
+        });
+      }
+
+      const promises = [imagePromise, uploadFile(mask, folder, {
+        progress: (p) => {
+          if (p.indeterminate) {
+            this.maskProgress = -1;
+          } else {
+            this.maskProgress = 100 * (p.current / p.total);
+          }
+        },
+      })];
+      const [imageFile, maskFile] = await Promise.all(promises);
 
       // Kick off processing job
       const job = (await rest.post('inpainting', formEncode({

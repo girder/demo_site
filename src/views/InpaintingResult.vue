@@ -33,6 +33,8 @@ v-app
         v-card-title.title
           | Result
           v-spacer
+          v-btn(v-if="!jobPending", icon, flat, large, color="primary", :to="rerunLink")
+            v-icon repeat
           v-btn(v-if="job.inpaintingImageResultId", icon, flat, large, color="primary",
               :href="downloadUrl(job.inpaintingImageResultId)")
             v-icon save_alt
@@ -56,6 +58,10 @@ export default {
     showLog: false,
   }),
   computed: {
+    rerunLink() {
+      const { inpaintingImageId, inpaintingMaskId } = this.job;
+      return `/inpainting?image=${inpaintingImageId}&mask=${inpaintingMaskId}`;
+    },
     statusText() {
       switch (this.job.status) {
         case JobStatus.INACTIVE:
