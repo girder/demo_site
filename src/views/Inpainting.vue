@@ -41,6 +41,7 @@ v-app
 </template>
 
 <script>
+import Vue from 'vue';
 import { mapActions } from 'vuex';
 import { getApiUrl } from '@/rest';
 import { sizeFormatter } from '@/utils/mixins';
@@ -101,6 +102,19 @@ export default {
         reader.readAsDataURL(val);
       }
     },
+  },
+  mounted() {
+    if (this.maskId) {
+      this.maskImage = new Image();
+      this.maskImage.onload = () => {
+        this.imageWidth = this.maskImage.width;
+        this.imageHeight = this.maskImage.height;
+        Vue.nextTick(() => {
+          this.$refs.canvas.getContext('2d').drawImage(this.maskImage, 0, 0);
+        });
+      };
+      this.maskImage.src = `${getApiUrl()}/file/${this.maskId}/download`;
+    }
   },
   methods: {
     cancelImage() {
