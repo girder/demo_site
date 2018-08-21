@@ -110,7 +110,7 @@ export default {
       // to support files served via CORS (e.g. S3 or webpack dev server). Otherwise
       // we cannot call getBlob on the resulting canvas for security reasons.
       rest.get(`file/${this.maskId}/download`, {
-        responseType: 'arraybuffer',
+        responseType: 'blob',
       }).then(({ data }) => {
         const img = new Image();
         const reader = new FileReader();
@@ -124,7 +124,7 @@ export default {
           };
           img.src = e.target.result;
         };
-        reader.readAsDataURL(new Blob([data]));
+        reader.readAsDataURL(data);
       });
     }
   },
