@@ -43,7 +43,7 @@ v-app
 <script>
 import Vue from 'vue';
 import { mapActions } from 'vuex';
-import { getApiUrl } from '@/rest';
+import rest, { getApiUrl } from '@/rest';
 import { sizeFormatter } from '@/utils/mixins';
 
 export default {
@@ -105,15 +105,26 @@ export default {
   },
   mounted() {
     if (this.maskId) {
-      this.maskImage = new Image();
-      this.maskImage.onload = () => {
-        this.imageWidth = this.maskImage.width;
-        this.imageHeight = this.maskImage.height;
-        Vue.nextTick(() => {
-          this.$refs.canvas.getContext('2d').drawImage(this.maskImage, 0, 0);
-        });
-      };
-      this.maskImage.src = `${getApiUrl()}/file/${this.maskId}/download`;
+      // We have to use an XHR (rather than just fetching the mask via an image src)
+      // to support files served via CORS (e.g. S3 or webpack dev server). Otherwise
+      // we cannot call getBlob on the resulting canvas for security reasons.
+      rest.get(`file/${this.maskId}/download`, {
+        responseType: 'arraybuffer',
+      }).then(({ data }) => {
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          img.onload = () => {
+            this.imageWidth = img.width;
+            this.imageHeight = img.height;
+            Vue.nextTick(() => {
+              this.$refs.canvas.getContext('2d').drawImage(img, 0, 0);
+            });
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(new Blob([data]));
+      });
     }
   },
   methods: {
