@@ -34,9 +34,10 @@ v-app
       v-card
         v-card-title.headline Uploading files
         v-card-text
-          .subtitle {{this.file && this.file.name}} ({{ imageSize }})
-          v-progress-linear(:value="imageProgress")
-          .subtitle.mt-4 Mask file
+          div(v-if="file")
+            .subtitle.mb-4 {{ file.name }} ({{ imageSize }})
+            v-progress-linear(:value="imageProgress")
+          .subtitle Mask file
           v-progress-linear(:value="maskProgress")
 </template>
 
