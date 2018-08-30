@@ -59,6 +59,7 @@ const demos = {
     title: 'Timelapse Video Creation',
     description: 'Upload a sequence of images taken over a period of time, and our ' +
                  'algorithm will stitch them together into a video.',
+    enabled: false,
     imageUrl: 'none',
     to: '/timelapse',
     buttonText: 'Create your own',
