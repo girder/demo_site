@@ -2,7 +2,7 @@
 div
   inpainting(v-if="isLoggedIn", @run="run", :image-progress="imageProgress",
       :mask-progress="maskProgress", :uploading="uploading", :mask-id="maskId",
-      :image-id="imageId", @cancelImage="cancelImage")
+      :image-id="imageId", @cancelImage="cancelImage", :examples="examples", @loadItem="loadItem")
   auth-container(v-else, :description="description", title="Image Inpainting",
       endpoint="inpainting/example")
 </template>
@@ -10,6 +10,7 @@ div
 <script>
 import { mapGetters, mapState } from 'vuex';
 import rest, { formEncode } from '@/rest';
+import { fetchingContainer } from '@/utils/mixins';
 import AuthContainer from '@/containers/AuthContainer';
 import Inpainting from '@/views/Inpainting';
 import { uploadFile } from '@/utils/upload';
@@ -20,6 +21,7 @@ on the server. You must log in or register a user to proceed.`;
 
 export default {
   components: { AuthContainer, Inpainting },
+  mixins: [fetchingContainer],
   data() {
     return {
       description,
@@ -28,6 +30,7 @@ export default {
       uploading: false,
       imageId: this.$route.query.image,
       maskId: this.$route.query.mask,
+      examples: [],
     };
   },
   computed: {
@@ -35,9 +38,16 @@ export default {
     ...mapGetters('auth', ['isLoggedIn']),
   },
   methods: {
+    async fetch() {
+      this.examples = (await rest.get('inpainting/example')).data;
+    },
     cancelImage() {
       this.imageId = null;
       this.maskId = null;
+    },
+    async loadItem(item) {
+      const [file] = (await rest.get(`item/${item._id}/files?limit=1`)).data;
+      this.imageId = file._id;
     },
     async run({ image, mask }) {
       this.uploading = true;

@@ -1,20 +1,31 @@
 <template lang="pug">
 v-app
-  v-content
-    .image-wrapper(v-if="file || imageId")
-      v-toolbar(app)
-        v-spacer
-        v-btn(@click="run", color="primary", :disabled="!enableRun", :loading="!enableRun")
-          v-icon.mr-2 play_arrow
-          | Run
-        v-tooltip(bottom)
-          v-btn(icon, slot="activator", @click="resetCanvas")
-            v-icon delete_forever
-          | Reset selection
-        v-tooltip(bottom)
-          v-btn(icon, slot="activator", @click="cancelImage")
-            v-icon arrow_back
-          | Choose new file
+  v-navigation-drawer(v-model="drawer", app, fixed, :clipped="$vuetify.breakpoint.lgAndUp")
+    v-layout(column)
+      div.pa-3
+        .title.pb-1 Examples
+        .body-1 Click to load
+      a(v-for="item in examples", :key="item._id", @click="$emit('loadItem', item)")
+        v-card-media.mb-4(:height="200", :src="downloadUrl(item)")
+
+  v-toolbar(app, fixed, :clipped-left="$vuetify.breakpoint.lgAndUp")
+    v-toolbar-side-icon(@click.stop="drawer = !drawer")
+    v-spacer
+    v-btn(v-if="drawMode", @click="run", color="primary", :disabled="!enableRun",
+        :loading="!enableRun")
+      v-icon.mr-2 play_arrow
+      | Run
+    v-tooltip(v-if="drawMode", bottom)
+      v-btn(icon, slot="activator", @click="resetCanvas")
+        v-icon delete_forever
+      | Reset selection
+    v-tooltip(v-if="drawMode", bottom)
+      v-btn(icon, slot="activator", @click="cancelImage")
+        v-icon arrow_back
+      | Choose new file
+
+  v-content(fluid, fill-height)
+    .image-wrapper(v-if="drawMode")
       canvas(ref="canvas", :height="imageHeight", :width="imageWidth", @mousedown="canvasDown",
           @mousemove="canvasMove", @mouseup="canvasUp")
       img(@load="imageLoaded", @error="imageLoadError", :src="imageSrc")
@@ -70,19 +81,27 @@ export default {
       type: String,
       default: null,
     },
+    examples: {
+      type: Array,
+      default: () => [],
+    },
   },
   data: () => ({
-    file: null,
     dataUrl: null,
     dragging: false,
     drawSize: 20,
+    drawer: null,
     dropzoneClass: null,
     enableRun: true,
+    file: null,
     imageHeight: 0,
     imageWidth: 0,
     snackbar: true,
   }),
   computed: {
+    drawMode() {
+      return this.file || this.imageId;
+    },
     imageSize() {
       return this.file && this.formatDataSize(this.file.size);
     },
@@ -94,6 +113,12 @@ export default {
     },
   },
   watch: {
+    drawMode(val) {
+      this.drawer = !val;
+    },
+    imageId(val) {
+      this.drawer = !val;
+    },
     file(val) {
       if (val) {
         const reader = new FileReader();
@@ -145,6 +170,9 @@ export default {
     canvasUp() {
       this.dragging = false;
     },
+    downloadUrl(item) {
+      return `${getApiUrl()}/item/${item._id}/download`;
+    },
     erase(x, y) {
       const ctx = this.$refs.canvas.getContext('2d');
       ctx.fillStyle = '#fff';
@@ -187,27 +215,23 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-$stripeColor = #f0f0f3
+$stripeColor = #e8e8eb
 $img = linear-gradient(
   -45deg, $stripeColor 25%, transparent 25%, transparent 50%, $stripeColor 50%,
   $stripeColor 75%, transparent 75%, transparent)
 
 .dropzone-wrapper
   position relative
-  cursor pointer
   min-height 260px
   height 100%
   text-align center
-  background-color #f6f6f9
+  background-color #efeff2
   background-repeat repeat
   background-size 30px 30px
-
-  &:hover
-    background-image $img
+  background-image $img
 
   &.animate
     animation stripes 2s linear infinite
-    background-image $img
 
   .file-input
     position absolute
@@ -240,6 +264,7 @@ $img = linear-gradient(
 
   img
     z-index -1
+    vertical-align middle
 
   canvas
     user-select none
