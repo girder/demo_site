@@ -187,6 +187,7 @@ class Inpainting(Resource):
 
         job['inpaintingImageId'] = image['_id']
         job['inpaintingMaskId'] = mask['_id']
+        job['inpaintingFolderId'] = folder['_id']
         return Job().save(job)
 
 
@@ -501,7 +502,8 @@ def load(info):
     Item().exposeFields(level=AccessType.READ, fields={
         'isSeries', 'isPhotomorph', 'originalName', 'photomorphTakenDate'})
     Job().exposeFields(level=AccessType.READ, fields={
-        'photomorphId', 'inpaintingImageId', 'inpaintingMaskId', 'inpaintingImageResultId'})
+        'photomorphId', 'inpaintingImageId', 'inpaintingMaskId', 'inpaintingImageResultId',
+        'inpaintingFolderId'})
 
     events.bind('model.file.finalizeUpload.after', info['name'], _handleUpload)
     events.bind('model.item.remove', info['name'], _itemDeleted)

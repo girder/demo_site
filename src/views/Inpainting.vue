@@ -1,12 +1,15 @@
 <template lang="pug">
 v-app
   v-navigation-drawer(v-model="drawer", app, fixed, :clipped="$vuetify.breakpoint.lgAndUp")
-    v-layout(column)
-      div.pa-3
-        .title.pb-1 Examples
-        .body-1 Click to load
-      a(v-for="item in examples", :key="item._id", @click="$emit('loadItem', item)")
-        v-card-media.mb-4(:height="200", :src="downloadUrl(item)")
+    v-list
+      v-list-group(:value="true", prepend-icon="collections")
+        v-list-tile(slot="activator")
+          v-list-tile-title Example images
+        a(v-for="item in examples", :key="item._id", @click="$emit('loadItem', item)")
+          v-card-media.mb-2(:height="200", :src="downloadUrl(item)")
+      v-list-group(:value="false", prepend-icon="person")
+        v-list-tile(slot="activator")
+          v-list-tile-title My images
 
   v-toolbar(app, fixed, :clipped-left="$vuetify.breakpoint.lgAndUp")
     v-toolbar-side-icon(@click.stop="drawer = !drawer")
