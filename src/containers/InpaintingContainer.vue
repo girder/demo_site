@@ -42,12 +42,11 @@ export default {
   methods: {
     async fetch() {
       rest.get('inpainting/example').then(({ data }) => {
-        this.examples = data;
+        this.examples = data.filter(item => item.meta && item.meta.inpaintingInput);
       });
       rest.get('inpainting/job').then(({ data }) => {
         this.jobs = data;
       });
-      this.examples = (await rest.get('inpainting/example')).data;
     },
     cancelImage() {
       this.imageId = null;
