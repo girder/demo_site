@@ -2,7 +2,8 @@
 div
   inpainting(v-if="isLoggedIn", @run="run", :image-progress="imageProgress",
       :mask-progress="maskProgress", :uploading="uploading", :mask-id="maskId",
-      :image-id="imageId", @cancelImage="cancelImage", :examples="examples", @loadItem="loadItem")
+      :image-id="imageId", @cancelImage="cancelImage", :examples="examples", @loadItem="loadItem",
+      :jobs="jobs")
   auth-container(v-else, :description="description", title="Image Inpainting",
       endpoint="inpainting/example")
 </template>
@@ -31,6 +32,7 @@ export default {
       imageId: this.$route.query.image,
       maskId: this.$route.query.mask,
       examples: [],
+      jobs: [],
     };
   },
   computed: {
@@ -39,6 +41,12 @@ export default {
   },
   methods: {
     async fetch() {
+      rest.get('inpainting/example').then(({ data }) => {
+        this.examples = data;
+      });
+      rest.get('inpainting/job').then(({ data }) => {
+        this.jobs = data;
+      });
       this.examples = (await rest.get('inpainting/example')).data;
     },
     cancelImage() {

@@ -10,6 +10,8 @@ v-app
       v-list-group(:value="false", prepend-icon="person")
         v-list-tile(slot="activator")
           v-list-tile-title My images
+        router-link(v-for="job in jobs", :key="job._id", :to="`/inpainting/${job._id}`")
+          v-card-media.mb-2(:height="200", :src="jobImageUrl(job)")
 
   v-toolbar(app, fixed, :clipped-left="$vuetify.breakpoint.lgAndUp")
     v-toolbar-side-icon(@click.stop="drawer = !drawer")
@@ -85,6 +87,10 @@ export default {
       default: null,
     },
     examples: {
+      type: Array,
+      default: () => [],
+    },
+    jobs: {
       type: Array,
       default: () => [],
     },
@@ -173,8 +179,8 @@ export default {
     canvasUp() {
       this.dragging = false;
     },
-    downloadUrl(item) {
-      return `${getApiUrl()}/item/${item._id}/download`;
+    downloadUrl(item, resource = 'item') {
+      return `${getApiUrl()}/${resource}/${item._id}/download`;
     },
     erase(x, y) {
       const ctx = this.$refs.canvas.getContext('2d');
@@ -196,6 +202,10 @@ export default {
     imageLoaded({ target }) {
       this.imageHeight = target.naturalHeight;
       this.imageWidth = target.naturalWidth;
+    },
+    jobImageUrl(job) {
+      const id = job.inpaintingImageResultId || job.inpaintingImageId;
+      return `${getApiUrl()}/file/${id}/download`;
     },
     resetCanvas() {
       const { width, height } = this.$refs.canvas;
