@@ -124,6 +124,7 @@ class Inpainting(Resource):
         self.resourceName = 'inpainting'
 
         self.route('GET', ('example',), self.listExamples)
+        self.route('GET', ('job',), self.listInpaintingJobs)
         self.route('PUT', (':id', 'examples_folder'), self.setExamplesFolder)
         self.route('POST', (), self.runInpainting)
 
@@ -152,6 +153,24 @@ class Inpainting(Resource):
         if folder is None:
             return []
         return list(Folder().childItems(folder))
+
+    @access.user
+    @filtermodel(Job)
+    @autoDescribeRoute(
+        Description('List inpainting jobs for a user.')
+        .modelParam('userId', 'The user ID.', model=User, paramType='formData',
+                    level=AccessType.READ, required=False)
+        .pagingParams(defaultSort='created', defaultSortDir=SortDir.DESCENDING, defaultLimit=10)
+    )
+    def listInpaintingJobs(self, user, limit, offset, sort):
+        user = user or self.getCurrentUser()
+        cursor = Job().find({
+            'userId': user['_id'],
+            'inpaintingImageId': {'$exists': True}
+        }, sort=sort)
+        return list(Job().filterResultsByPermission(
+            cursor=cursor, user=self.getCurrentUser(), level=AccessType.READ, limit=limit,
+            offset=offset))
 
     @access.user
     @filtermodel(Job)
