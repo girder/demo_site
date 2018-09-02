@@ -6,12 +6,12 @@ v-app
         v-list-tile(slot="activator")
           v-list-tile-title Example images
         a(v-for="item in examples", :key="item._id", @click="$emit('loadItem', item)")
-          v-card-media.mb-2(:height="200", :src="downloadUrl(item)")
+          v-card-media.mb-2(:height="200", :src="downloadUrl(item)", v-ripple="true")
       v-list-group(:value="false", prepend-icon="person")
         v-list-tile(slot="activator")
           v-list-tile-title My images
         router-link(v-for="job in jobs", :key="job._id", :to="`/inpainting/${job._id}`")
-          v-card-media.mb-2(:height="200", :src="jobImageUrl(job)")
+          v-card-media.mb-2(:height="200", :src="jobImageUrl(job)", v-ripple="true")
 
   v-toolbar(app, fixed, :clipped-left="$vuetify.breakpoint.lgAndUp")
     v-toolbar-side-icon(@click.stop="drawer = !drawer")
