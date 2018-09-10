@@ -3,13 +3,13 @@ div
   inpainting(v-if="isLoggedIn", @run="run", :image-progress="imageProgress",
       :mask-progress="maskProgress", :uploading="uploading", :mask-id="maskId",
       :image-id="imageId", @cancelImage="cancelImage", :examples="examples", @loadItem="loadItem",
-      :jobs="jobs")
+      :jobs="jobs", @logout="logout")
   auth-container(v-else, :description="description", title="Image Inpainting",
       endpoint="inpainting/example")
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import rest, { formEncode } from '@/rest';
 import { fetchingContainer } from '@/utils/mixins';
 import AuthContainer from '@/containers/AuthContainer';
@@ -40,6 +40,7 @@ export default {
     ...mapGetters('auth', ['isLoggedIn']),
   },
   methods: {
+    ...mapActions('auth', ['logout']),
     async fetch() {
       rest.get('inpainting/example').then(({ data }) => {
         this.examples = data.filter(item => item.meta && item.meta.inpaintingInput);

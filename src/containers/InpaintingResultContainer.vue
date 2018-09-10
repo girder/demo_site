@@ -1,9 +1,10 @@
 <template lang="pug">
-inpainting-result(v-if="job", :job="job", @refresh="fetch")
+inpainting-result(v-if="job", :job="job", @refresh="fetch", @logout="logoutAndLeave")
 </template>
 
 <script>
 import Vue from 'vue';
+import { mapActions, mapGetters } from 'vuex';
 import { JobStatus } from '@/constants';
 import rest from '@/rest';
 import { fetchingContainer } from '@/utils/mixins';
@@ -16,6 +17,7 @@ export default {
     _timeout: null,
     job: null,
   }),
+  computed: mapGetters('auth', ['isLoggedIn']),
   watch: {
     $route() {
       Vue.nextTick().then(() => {
@@ -27,13 +29,22 @@ export default {
     window.clearTimeout(this._timeout);
   },
   methods: {
+    ...mapActions('auth', ['logout']),
+    async logoutAndLeave() {
+      await this.logout();
+      this.$router.push('/inpainting');
+    },
     async fetch() {
-      this.job = (await rest.get(`job/${this.$route.params.jobId}`)).data;
+      if (this.isLoggedIn) {
+        this.job = (await rest.get(`job/${this.$route.params.jobId}`)).data;
 
-      if (![JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.CANCELED].includes(this.job.status)) {
-        this._timeout = window.setTimeout(() => {
-          this.fetch();
-        }, 3000);
+        if (![JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.CANCELED].includes(this.job.status)) {
+          this._timeout = window.setTimeout(() => {
+            this.fetch();
+          }, 3000);
+        }
+      } else {
+        this.$router.push('/inpainting');
       }
     },
   },

@@ -1,5 +1,11 @@
 <template lang="pug">
 v-app
+  v-toolbar(app, fixed)
+    v-spacer
+    v-tooltip(bottom)
+      v-btn(icon, slot="activator", @click="$emit('logout')")
+        v-icon logout
+      | Log out
   v-content.bg-grey
     v-layout.my-4(column, align-center)
       v-card.my-4

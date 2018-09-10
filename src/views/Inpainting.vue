@@ -22,12 +22,16 @@ v-app
       | Run
     v-tooltip(v-if="drawMode", bottom)
       v-btn(icon, slot="activator", @click="resetCanvas")
-        v-icon delete_forever
+        v-icon flip_to_back
       | Reset selection
     v-tooltip(v-if="drawMode", bottom)
       v-btn(icon, slot="activator", @click="cancelImage")
-        v-icon arrow_back
+        v-icon clear
       | Choose new file
+    v-tooltip(bottom)
+      v-btn(icon, slot="activator", @click="$emit('logout')")
+        v-icon logout
+      | Log out
 
   v-content(fluid, fill-height)
     .image-wrapper(v-if="drawMode")
