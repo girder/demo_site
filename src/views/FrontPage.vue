@@ -1,7 +1,7 @@
 <template lang="pug">
 v-app
   v-content
-    v-toolbar(height="90px")
+    v-toolbar(v-if="!embedded", height="90px")
       v-toolbar-title
         img.kw-logo(src="@/assets/KWLogo.svg")
 
@@ -48,6 +48,11 @@ export default {
   data: () => ({
     demos,
   }),
+  computed: {
+    embedded() {
+      return this.$route.query.embedded;
+    },
+  },
 };
 </script>
 
