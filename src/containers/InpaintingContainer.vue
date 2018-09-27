@@ -42,12 +42,14 @@ export default {
   methods: {
     ...mapActions('auth', ['logout']),
     async fetch() {
-      rest.get('inpainting/example').then(({ data }) => {
-        this.examples = data.filter(item => item.meta && item.meta.inpaintingInput);
-      });
-      rest.get('inpainting/job').then(({ data }) => {
-        this.jobs = data;
-      });
+      if (this.isLoggedIn) {
+        rest.get('inpainting/example').then(({ data }) => {
+          this.examples = data.filter(item => item.meta && item.meta.inpaintingInput);
+        });
+        rest.get('inpainting/job').then(({ data }) => {
+          this.jobs = data;
+        });
+      }
     },
     cancelImage() {
       this.imageId = null;

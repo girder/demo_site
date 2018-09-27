@@ -10,6 +10,7 @@ from girder.api import access
 from girder.api.describe import Description, autoDescribeRoute
 from girder.api.rest import Resource, filtermodel, getCurrentUser
 from girder.constants import AccessType, SortDir, TokenScope
+from girder.exceptions import ValidationException
 from girder.models.collection import Collection
 from girder.models.file import File
 from girder.models.folder import Folder
@@ -38,7 +39,6 @@ DELETE_SUBJECT = 'Warning: your timelapse data will be deleted soon!'
 TokenScope.describeScope(
     CLEANUP_TOKEN_SCOPE, 'Delete expired timelapse data',
     description='Delete expired timelapses and send emails for pending ones.', admin=True)
-
 
 # [[x1, y2], [x2, y2]] in pixel coordinates
 _MASK_RECT_SCHEMA = {
@@ -185,11 +185,13 @@ class Inpainting(Resource):
     def runInpainting(self, image, mask, folder):
         basename = os.path.splitext(image['name'])[0]
         outPath = VolumePath(basename + '_result.jpg')
+        artifactPath = VolumePath('job_artifacts')
         job = docker_run.delay(
             'zachmullen/inpainting:latest', container_args=[
                 GirderFileIdToVolume(image['_id']),
                 GirderFileIdToVolume(mask['_id']),
                 outPath,
+                '--artifacts-dir', artifactPath,
                 '--progress-pipe', ProgressPipe()
             ], girder_job_title='Inpainting: %s' % image['name'],
             girder_result_hooks=[
@@ -198,7 +200,8 @@ class Inpainting(Resource):
                         'inpaintedImage': True,
                         'folderId': str(folder['_id']),
                     })
-                })
+                }),
+                #GirderUploadVolumePathJobArtifact(artifactPath)
             ]).job
 
         folder['inpaintingJobId'] = job['_id']
@@ -491,6 +494,13 @@ def _validateStudiesColl(doc):
     Collection().load(doc['value'], exc=True, force=True)
 
 
+def _authenticateGuestUser(event):
+    # Guest login skips password validation since it's open to anyone
+    if event.info['login'] == 'guest':
+        guest = User().findOne({'login': 'guest'})
+        event.addResponse(guest).preventDefault().stopPropagation()
+
+
 def load(info):
     webroot = staticFile(os.path.join(info['pluginRootDir'], 'dist', 'index.html'))
     registerPluginWebroot(webroot, info['name'])
@@ -527,3 +537,13 @@ def load(info):
     events.bind('model.file.finalizeUpload.after', info['name'], _handleUpload)
     events.bind('model.item.remove', info['name'], _itemDeleted)
     events.bind('jobs.job.update', info['name'], _jobUpdated)
+
+    # Guest user support
+    events.bind('model.user.authenticate', info['name'], _authenticateGuestUser)
+    try:
+        User().createUser(
+            login='guest', password='guestpass', firstName='Guest', lastName='User',
+            email='guest@algorithms.kitware.com')
+    except ValidationException:
+        pass
+

@@ -1,13 +1,14 @@
 <template lang="pug">
 v-card
-  form(@submit.prevent="login")
+  form(@submit.prevent="")
     v-card-text
       v-text-field(v-model="username", label="Username or email", autofocus)
       v-text-field(v-model="password", type="password", label="Password",
           :error-messages="errorMessages")
     v-card-actions
       v-btn(type="submit", color="primary", :disabled="loginInProgress",
-          :loading="loginInProgress") Login
+          :loading="loginInProgress", @click="login") Login
+      v-btn(type="submit", flat, :disabled="loginInProgress", @click="guestLogin") Login as guest
 </template>
 
 <script>
@@ -34,6 +35,12 @@ export default {
     },
   },
   methods: {
+    guestLogin() {
+      this.$emit('login', {
+        username: 'guest',
+        password: '',
+      });
+    },
     login() {
       this.$emit('login', {
         username: this.username,
