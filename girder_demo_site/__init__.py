@@ -16,13 +16,13 @@ from girder.models.file import File
 from girder.models.folder import Folder
 from girder.models.item import Item
 from girder.models.user import User
-from girder.plugins.jobs.constants import JobStatus
-from girder.plugins.jobs.models.job import Job
-from girder.plugins.thumbnails.worker import createThumbnail
+from girder.plugin import getPlugin, registerPluginWebroot, GirderPlugin
+from girder_jobs.constants import JobStatus
+from girder_jobs.models.job import Job
+from girder_thumbnails.worker import createThumbnail
 from girder.utility import setting_utilities
 from girder.utility.mail_utils import getEmailUrlPrefix, renderTemplate, sendEmail
 from girder.utility.progress import setResponseTimeLimit
-from girder.utility.plugin_utilities import registerPluginWebroot
 from girder.utility.server import staticFile
 from girder_worker.docker.tasks import docker_run
 from girder_worker.docker.transforms import VolumePath
@@ -201,7 +201,7 @@ class Inpainting(Resource):
                         'folderId': str(folder['_id']),
                     })
                 }),
-                #GirderUploadVolumePathJobArtifact(artifactPath)
+                # GirderUploadVolumePathJobArtifact(artifactPath)
             ]).job
 
         folder['inpaintingJobId'] = job['_id']
@@ -501,49 +501,55 @@ def _authenticateGuestUser(event):
         event.addResponse(guest).preventDefault().stopPropagation()
 
 
-def load(info):
-    webroot = staticFile(os.path.join(info['pluginRootDir'], 'dist', 'index.html'))
-    registerPluginWebroot(webroot, info['name'])
+class DemoSitePlugin(GirderPlugin):
+    DISPLAY_NAME = 'Demo site'
 
-    info['config']['/stroke_ct_static'] = {
-        'tools.staticdir.on': True,
-        'tools.staticdir.dir': os.path.join(info['pluginRootDir'], 'dist', 'stroke_ct_static')
-    }
+    def load(self, info):
+        getPlugin('worker').load(info)
 
-    info['config']['/itk'] = {
-        'tools.staticdir.on': True,
-        'tools.staticdir.dir': os.path.join(info['pluginRootDir'], 'dist', 'itk')
-    }
+        dist = os.path.join(os.path.dirname(__file__), 'dist')
+        webroot = staticFile(os.path.join(dist, 'index.html'))
+        registerPluginWebroot(webroot, 'demo_site')
 
-    # info['apiRoot'].study = Study()
-    # info['apiRoot'].series = Series()
-    info['apiRoot'].photomorph = Photomorph()
-    info['apiRoot'].inpainting = Inpainting()
+        info['config']['/stroke_ct_static'] = {
+            'tools.staticdir.on': True,
+            'tools.staticdir.dir': os.path.join(dist, 'stroke_ct_static')
+        }
 
-    Folder().ensureIndex(('isStudy', {'sparse': True}))
-    Folder().ensureIndex(('isPhotomorph', {'sparse': True}))
-    Folder().ensureIndex(('photomorphExampleFolder', {'sparse': True}))
-    Folder().ensureIndex(('inpaintingExampleFolder', {'sparse': True}))
-    Folder().exposeFields(level=AccessType.READ, fields={
-        'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality', 'photomorphJobId',
-        'isPhotomorph', 'photomorphInputFolderId', 'photomorphOutputItems', 'photomorphJobStatus',
-        'photomorphMaskRect'})
-    Item().exposeFields(level=AccessType.READ, fields={
-        'isSeries', 'isPhotomorph', 'originalName', 'photomorphTakenDate'})
-    Job().exposeFields(level=AccessType.READ, fields={
-        'photomorphId', 'inpaintingImageId', 'inpaintingMaskId', 'inpaintingImageResultId',
-        'inpaintingFolderId'})
+        info['config']['/itk'] = {
+            'tools.staticdir.on': True,
+            'tools.staticdir.dir': os.path.join(dist, 'itk')
+        }
 
-    events.bind('model.file.finalizeUpload.after', info['name'], _handleUpload)
-    events.bind('model.item.remove', info['name'], _itemDeleted)
-    events.bind('jobs.job.update', info['name'], _jobUpdated)
+        # info['apiRoot'].study = Study()
+        # info['apiRoot'].series = Series()
+        info['apiRoot'].photomorph = Photomorph()
+        info['apiRoot'].inpainting = Inpainting()
 
-    # Guest user support
-    events.bind('model.user.authenticate', info['name'], _authenticateGuestUser)
-    try:
-        User().createUser(
-            login='guest', password='guestpass', firstName='Guest', lastName='User',
-            email='guest@algorithms.kitware.com')
-    except ValidationException:
-        pass
+        Folder().ensureIndex(('isStudy', {'sparse': True}))
+        Folder().ensureIndex(('isPhotomorph', {'sparse': True}))
+        Folder().ensureIndex(('photomorphExampleFolder', {'sparse': True}))
+        Folder().ensureIndex(('inpaintingExampleFolder', {'sparse': True}))
+        Folder().exposeFields(level=AccessType.READ, fields={
+            'isStudy', 'nSeries', 'studyDate', 'patientId', 'studyModality', 'photomorphJobId',
+            'isPhotomorph', 'photomorphInputFolderId', 'photomorphOutputItems',
+            'photomorphJobStatus', 'photomorphMaskRect'})
+        Item().exposeFields(level=AccessType.READ, fields={
+            'isSeries', 'isPhotomorph', 'originalName', 'photomorphTakenDate'})
+        Job().exposeFields(level=AccessType.READ, fields={
+            'photomorphId', 'inpaintingImageId', 'inpaintingMaskId', 'inpaintingImageResultId',
+            'inpaintingFolderId'})
+
+        events.bind('model.file.finalizeUpload.after', 'demo_site', _handleUpload)
+        events.bind('model.item.remove', 'demo_site', _itemDeleted)
+        events.bind('jobs.job.update', 'demo_site', _jobUpdated)
+
+        # Guest user support
+        events.bind('model.user.authenticate', 'demo_site', _authenticateGuestUser)
+        try:
+            User().createUser(
+                login='guest', password='guestpass', firstName='Guest', lastName='User',
+                email='guest@algorithms.kitware.com')
+        except ValidationException:
+            pass
 

@@ -1,6 +1,7 @@
 node_modules/
-/dist/
+/girder_demo_site/dist/
 yarn-debug.log*
 yarn-error.log*
 /test/unit/coverage/
 *.pyc
+/girder_demo_site.egg-info/

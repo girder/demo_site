@@ -1,4 +1,0 @@
-name: Demo site plugin
-dependencies:
-  - thumbnails
-  - worker
