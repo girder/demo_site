@@ -34,9 +34,10 @@ v-app
     v-layout.demos-list(row, justify-center, wrap)
       demo-link.mx-4.mb-2(v-for="(demo, i) in demos.medical", :key="i", v-bind="demo")
 
-    hr.mx-5.mb-2(color="#ddd")
-    .text-xs-center.mb-4
-      .subtitle &copy; Kitware, Inc.
+    template(v-if="!embedded")
+      hr.mx-5.mb-2(color="#ddd")
+      .text-xs-center.mb-4
+        .subtitle &copy; Kitware, Inc.
 </template>
 
 <script>
