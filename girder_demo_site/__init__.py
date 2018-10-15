@@ -521,8 +521,8 @@ class DemoSitePlugin(GirderPlugin):
             'tools.staticdir.dir': os.path.join(dist, 'itk')
         }
 
-        # info['apiRoot'].study = Study()
-        # info['apiRoot'].series = Series()
+        info['apiRoot'].study = Study()
+        info['apiRoot'].series = Series()
         info['apiRoot'].photomorph = Photomorph()
         info['apiRoot'].inpainting = Inpainting()
 

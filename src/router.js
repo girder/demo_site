@@ -7,7 +7,7 @@ import FrontPage from '@/views/FrontPage';
 import PhotomorphListRoute from '@/routes/PhotomorphListRoute';
 import Inpainting from '@/containers/InpaintingContainer';
 import InpaintingResultContainer from '@/containers/InpaintingResultContainer';
-// import StudyListContainer from '@/containers/StudyListContainer';
+import StudyListContainer from '@/containers/StudyListContainer';
 import UploadPage from '@/views/UploadPage';
 
 Vue.use(Router);
@@ -37,5 +37,8 @@ export default new Router({
   }, {
     path: '/inpainting/:jobId',
     component: InpaintingResultContainer,
+  }, {
+    path: '/stroke_ct',
+    component: StudyListContainer,
   }],
 });
