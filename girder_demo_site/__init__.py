@@ -21,7 +21,8 @@ from girder_jobs.constants import JobStatus
 from girder_jobs.models.job import Job
 from girder_thumbnails.worker import createThumbnail
 from girder.utility import setting_utilities
-from girder.utility.mail_utils import getEmailUrlPrefix, renderTemplate, sendEmail
+from girder.utility.mail_utils import (
+    addTemplateDirectory, getEmailUrlPrefix, renderTemplate, sendEmail)
 from girder.utility.progress import setResponseTimeLimit
 from girder.utility.server import staticFile
 from girder_worker.docker.tasks import docker_run
@@ -507,6 +508,8 @@ class DemoSitePlugin(GirderPlugin):
 
     def load(self, info):
         getPlugin('worker').load(info)
+
+        addTemplateDirectory(os.path.join(os.path.dirname(__file__)), 'mail_templates')
 
         dist = os.path.join(os.path.dirname(__file__), 'dist')
         webroot = staticFile(os.path.join(dist, 'index.html'))
