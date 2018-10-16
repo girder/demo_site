@@ -29,12 +29,6 @@ v-app(dark)
                 v-date-picker(v-model="endDate", @change="$refs.endDateMenuRef.save(endDate)",
                     :min="startDate", no-title)
 
-        // Upload button and login message
-        v-flex.text-xs-right(xs12, md6)
-          v-btn.my-4(large, color="success", to="upload")
-            v-icon.mr-2 file_upload
-            | Upload
-
     // Study list
     v-flex(xs12, md10, offset-md1)
       v-data-table(no-data-text="No studies found.", no-results-text="No matching studies.",

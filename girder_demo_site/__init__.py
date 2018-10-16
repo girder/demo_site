@@ -402,20 +402,21 @@ class Study(Resource):
     @filtermodel(Folder)
     @autoDescribeRoute(
         Description('Create a new study.')
-        .param('patentId', 'The anonymized patient identifier or MRN.')
+        .param('patientId', 'The anonymized patient identifier or MRN.')
         .param('date', 'Study date.', dataType='dateTime')
         .param('modality', 'Study modality.')
         .param('description', 'Study description.')
+        .param('public', 'Public access flag', dataType='boolean', default=False)
     )
-    def createStudy(self, identifier, date, modality, description):
+    def createStudy(self, patientId, date, modality, description, public):
         user = self.getCurrentUser()
         study = Folder().createFolder(
-            parent=user, name=identifier, description=description, parentType='user', public=False,
+            parent=user, name=patientId, description=description, parentType='user', public=public,
             creator=user, allowRename=True)
         study['isStudy'] = True
         study['nSeries'] = 0
         study['studyDate'] = date
-        study['patientId'] = identifier
+        study['patientId'] = patientId
         study['studyModality'] = modality
         return Folder().save(study)
 
@@ -521,8 +522,8 @@ class DemoSitePlugin(GirderPlugin):
             'tools.staticdir.dir': os.path.join(dist, 'itk')
         }
 
-        # info['apiRoot'].study = Study()
-        # info['apiRoot'].series = Series()
+        info['apiRoot'].study = Study()
+        info['apiRoot'].series = Series()
         info['apiRoot'].photomorph = Photomorph()
         info['apiRoot'].inpainting = Inpainting()
 

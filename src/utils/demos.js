@@ -46,7 +46,8 @@ const demos = {
     title: 'Stroke Assessment',
     description: 'Analyze intracranial vasculature in acute stroke CT scans to identify the ' +
                  'presence of collateral vessels that support recovery.',
-    enabled: false,
+    to: '/stroke_ct',
+    buttonText: 'Try it out',
     imageUrl: strokeImg,
   }, {
     title: 'Tumors & Traumatic Brain Injury',
