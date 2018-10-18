@@ -14,6 +14,11 @@ const demos = {
     description: 'This video demonstrates various tracking capabilities developed by our ' +
                  'computer vision team.',
     imageUrl: trackingImg,
+    video: {
+      src: 'https://player.vimeo.com/video/90767973',
+      width: 640,
+      height: 360,
+    },
     href: 'https://vimeo.com/90767973',
     buttonText: 'Watch',
     buttonIcon: VIDEO_ICON,
@@ -22,6 +27,11 @@ const demos = {
     description: 'Complex activity recognition using Granger Constrained DBN (GDBN) in sports ' +
                  'and surveillance video.',
     imageUrl: recognitionImg,
+    video: {
+      src: 'https://player.vimeo.com/video/97850118',
+      width: 640,
+      height: 480,
+    },
     href: 'https://vimeo.com/97850118',
     buttonText: 'Watch',
     buttonIcon: VIDEO_ICON,
@@ -39,6 +49,11 @@ const demos = {
     description: 'Using computer-tracked laparoscopic hardware and an augmented reality display,' +
                  ' surgical simulation can reduce surgeon training time, costs, and risks.',
     imageUrl: surgicalImg,
+    video: {
+      src: 'https://player.vimeo.com/video/191839695',
+      width: 640,
+      height: 360,
+    },
     href: 'https://vimeo.com/191839695',
     buttonText: 'Watch',
     buttonIcon: VIDEO_ICON,

@@ -13,6 +13,7 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-param-reassign': 0,
     'no-underscore-dangle': 0,
+    'no-await-in-loop': 0,
     'import/extensions': {
       vue: 'never'
     },

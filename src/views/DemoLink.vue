@@ -6,13 +6,26 @@ v-card.flexcard(width="400px")
   v-card-text.grow.body-1.py-2.px-3 {{ description }}
   v-card-actions
     v-spacer
-    v-btn.mr-1(v-if="enabled", color="primary", :to="to", :href="href",
+    video-dialog(v-if="enabled && video",
+        :src="video.src",
+        :width="video.width",
+        :height="video.height")
+      v-btn.mr-1(flat, slot="activator", color="primary") {{ buttonText }}
+    v-btn.mr-1(v-else-if="enabled && (to || href)",
+        color="primary",
+        :to="to",
+        :href="href",
         :target="href ? '_blank' : null", flat) {{ buttonText }}
     v-btn(v-else, disabled, flat) Coming soon
 </template>
 
 <script>
+import VideoDialog from './VideoDialog.vue';
+
 export default {
+  components: {
+    VideoDialog,
+  },
   props: {
     title: {
       type: String,
@@ -32,6 +45,10 @@ export default {
     },
     href: {
       type: String,
+      default: null,
+    },
+    video: {
+      type: Object,
       default: null,
     },
     buttonText: {
