@@ -125,7 +125,7 @@ $maxWidth = 800px
 .img-wrapper
   display block
 
-.input-img,.result-image,.mask-img
+.input-img,.result-img,.mask-img
   max-width $maxWidth
   vertical-align middle
 
