@@ -142,7 +142,7 @@ export default {
       }
 
       if (search) {
-        return item.studyId.toLowerCase().includes(search) ||
+        return item.patientId.toLowerCase().includes(search) ||
           item.studyModality.toLowerCase().includes(search) ||
           item.description.toLowerCase().includes(search);
       }
