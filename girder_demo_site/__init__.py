@@ -388,7 +388,7 @@ class Study(Resource):
         self.route('GET', (), self.listStudies)
         self.route('POST', (), self.createStudy)
 
-    @access.public
+    @access.public(scope=TokenScope.DATA_READ)
     @filtermodel(Folder)
     @autoDescribeRoute(
         Description('List studies.')
@@ -399,7 +399,7 @@ class Study(Resource):
         return list(Folder().filterResultsByPermission(
             cursor, level=AccessType.READ, user=self.getCurrentUser(), limit=limit, offset=offset))
 
-    @access.user
+    @access.user(scope=TokenScope.DATA_WRITE)
     @filtermodel(Folder)
     @autoDescribeRoute(
         Description('Create a new study.')
@@ -430,7 +430,7 @@ class Series(Resource):
         self.route('GET', (), self.listSeries)
         self.route('POST', (), self.createSeries)
 
-    @access.public
+    @access.public(scope=TokenScope.DATA_READ)
     @filtermodel(Item)
     @autoDescribeRoute(
         Description('List series in a study.')
@@ -443,7 +443,7 @@ class Series(Resource):
             'isSeries': True
         }))
 
-    @access.user
+    @access.user(scope=TokenScope.DATA_WRITE)
     @filtermodel(Item)
     @autoDescribeRoute(
         Description('Create a new series.')
