@@ -16,7 +16,7 @@ const createLintingRule = () => ({
     formatter: require('eslint-friendly-formatter'),
     emitWarning: !config.dev.showEslintErrorsInOverlay,
   },
-})
+});
 
 module.exports = {
   context: path.resolve(__dirname, '../'),
@@ -52,7 +52,7 @@ module.exports = {
         include: [
           resolve('src'),
           resolve('test'),
-          resolve('node_modules/webpack-dev-server/client'),
+          resolve('node_modules/@girder/components/src'),
           resolve('node_modules/paraviewweb/src'),
           resolve('node_modules/paraview-glance/src'),
           resolve('node_modules/vtk.js'),
@@ -80,7 +80,7 @@ module.exports = {
         options: {
           limit: 10000,
           name: utils.assetsPath('fonts/[name].[hash:7].[ext]'),
-        }
+        },
       },
       {
         test: /\.glsl$/,
@@ -103,23 +103,19 @@ module.exports = {
         ],
       },
       {
-        test: /\.mcss$/,
-        use: [
-          { loader: 'style-loader' },
-          {
-            loader: 'css-loader',
-            options: {
-              localIdentName: '[name]-[local]-[sha512:hash:base32:5]',
-              modules: true,
-            },
+        test: /\.module\.css$/,
+        use: ['style-loader', {
+          loader: 'css-loader',
+          options: {
+            modules: true,
           },
-          {
-            loader: 'postcss-loader',
-            options: {
-              plugins: () => [autoprefixer('last 3 version', 'ie >= 10')],
-            },
+        },
+        {
+          loader: 'postcss-loader',
+          options: {
+            plugins: () => [autoprefixer('last 3 version', 'ie >= 10')],
           },
-        ],
+        }],
       },
     ],
   },

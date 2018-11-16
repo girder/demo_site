@@ -8,7 +8,7 @@ import { mapActions, mapGetters } from 'vuex';
 import { JobStatus } from '@/constants';
 import rest from '@/rest';
 import { fetchingContainer } from '@/utils/mixins';
-import InpaintingResult from '@/views/InpaintingResult';
+import InpaintingResult from '@/views/inpainting/InpaintingResult';
 
 export default {
   components: { InpaintingResult },

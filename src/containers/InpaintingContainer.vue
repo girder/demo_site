@@ -13,7 +13,7 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import rest, { formEncode } from '@/rest';
 import { fetchingContainer } from '@/utils/mixins';
 import AuthContainer from '@/containers/AuthContainer';
-import Inpainting from '@/views/Inpainting';
+import Inpainting from '@/views/inpainting/Inpainting';
 import { uploadFile } from '@/utils/upload';
 
 const description = `This application allows you to select a photo from your device, draw on

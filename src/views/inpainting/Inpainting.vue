@@ -285,6 +285,6 @@ $img = linear-gradient(
 
   canvas
     user-select none
-    cursor url(../assets/eraser.svg), crosshair
+    cursor url('~@/assets/eraser.svg'), crosshair
     position absolute
 </style>
