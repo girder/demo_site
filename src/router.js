@@ -9,6 +9,7 @@ import Inpainting from '@/containers/InpaintingContainer';
 import InpaintingResultContainer from '@/containers/InpaintingResultContainer';
 import StudyListContainer from '@/containers/StudyListContainer';
 import UploadPage from '@/views/UploadPage';
+import Utm from '@/containers/UtmContainer';
 
 Vue.use(Router);
 
@@ -25,6 +26,9 @@ export default new Router({
   }, {
     path: '/upload',
     component: UploadPage,
+  }, {
+    path: '/utm',
+    component: Utm,
   }, {
     path: '/timelapse',
     component: PhotomorphListRoute,

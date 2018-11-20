@@ -52,6 +52,7 @@ module.exports = {
         include: [
           resolve('src'),
           resolve('test'),
+          resolve('../girder_web_components/src'),
           resolve('node_modules/@girder/components/src'),
           resolve('node_modules/paraviewweb/src'),
           resolve('node_modules/paraview-glance/src'),

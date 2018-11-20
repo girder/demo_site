@@ -68,8 +68,10 @@ const demos = {
     title: 'Tumors & Traumatic Brain Injury',
     description: 'Upload a T1 MRI scan and have our system estimate the brain\'s appearance ' +
                  'prior to injury and the changes induced by the injury.',
-    enabled: false,
+    enabled: true,
     imageUrl: tbiImg,
+    buttonText: 'Try it out',
+    to: '/utm',
   }],
   cloud: [{
     title: 'Timelapse Video Creation',

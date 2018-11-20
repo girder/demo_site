@@ -7,5 +7,8 @@
 import Vue from 'vue';
 import Vuetify from 'vuetify';
 import 'vuetify/dist/vuetify.min.css';
+import VueAsync from 'vue-async-computed';
+import { utils } from '@girder/components/src';
 
-Vue.use(Vuetify);
+Vue.use(VueAsync);
+Vue.use(Vuetify, utils.vuetifyConfig);

@@ -1,20 +1,22 @@
 import Vue from 'vue';
 import { sync } from 'vuex-router-sync';
-// Make sure this CSS is imported prior to importing components; this appears to matter for
-// order of precedence for our CSS files that get pulled out with ExtractTextPlugin
-import './utils/ui-setup';
+import { RestClient } from '@girder/components';
 
+import './utils/ui-setup.js';
 import App from './App';
 import { API_ROOT } from './constants';
 import router from './router';
 import store from './store';
 import { setApiUrl, getTokenFromCookie } from './rest';
 
+const girderRest = new RestClient({ apiRoot: API_ROOT });
+
 sync(store, router);
 setApiUrl(API_ROOT);
 
 store.commit('auth/setToken', getTokenFromCookie());
 store.dispatch('auth/whoami').then(() => new Vue({
+  provide: { girderRest },
   el: '#app',
   router,
   store,

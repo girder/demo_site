@@ -615,6 +615,16 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
+"@girder/components@^3.0.0-alpha.1":
+  version "3.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@girder/components/-/components-3.0.0-alpha.1.tgz#62b51851beb00e2d082e01c2a6ff255fcccff962"
+  dependencies:
+    axios "^0.18.0"
+    js-cookie "^2.2.0"
+    qs "^6.5.2"
+    vue "^2.5.16"
+    vuetify "^1.1.9"
+
 "@sinonjs/formatio@3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@sinonjs/formatio/-/formatio-3.0.0.tgz#9d282d81030a03a03fa0c5ce31fd8786a4da311a"
@@ -7087,7 +7097,7 @@ qrcode-terminal@^0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/qrcode-terminal/-/qrcode-terminal-0.12.0.tgz#bb5b699ef7f9f0505092a3748be4464fe71b5819"
 
-qs@6.5.2, qs@^6.5.1, qs@~6.5.2:
+qs@6.5.2, qs@^6.5.1, qs@^6.5.2, qs@~6.5.2:
   version "6.5.2"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.2.tgz#cb3ae806e8740444584ef154ce8ee98d403f3e36"
 
@@ -8832,6 +8842,10 @@ vtk.js@^7.3.2:
     webvr-polyfill "0.10.5"
     webworker-promise "0.4.1"
 
+vue-async-computed@^3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/vue-async-computed/-/vue-async-computed-3.5.0.tgz#30657970618389f30cba4d4b52b119bb1b2976aa"
+
 vue-eslint-parser@^2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-2.0.3.tgz#c268c96c6d94cfe3d938a5f7593959b0ca3360d1"
@@ -8905,7 +8919,7 @@ vuetify@1.0.19:
   version "1.0.19"
   resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-1.0.19.tgz#fb6d123dd1c217795fc2333e912c0ecbed2ed69e"
 
-vuetify@^1.1.8:
+vuetify@^1.1.8, vuetify@^1.1.9:
   version "1.3.8"
   resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-1.3.8.tgz#e56832f40e5043470e2100a1501463d5a1ca6d8e"
 

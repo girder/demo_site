@@ -15,6 +15,7 @@
   "dependencies": {
     "@babel/core": "^7.1.6",
     "@babel/runtime": "^7.1.5",
+    "@girder/components": "^3.0.0-alpha.1",
     "axios": "^0.18.0",
     "dateformat": "^3.0.3",
     "hammerjs": "^2.0.8",
@@ -29,6 +30,7 @@
     "qs": "^6.5.1",
     "vtk.js": "^7.3.2",
     "vue": "^2.5.16",
+    "vue-async-computed": "^3.5.0",
     "vue-router": "^3.0.1",
     "vuedraggable": "^2.16.0",
     "vuetify": "^1.1.8",
