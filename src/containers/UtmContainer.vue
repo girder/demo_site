@@ -1,9 +1,6 @@
 <template lang="pug">
 div
-  utm(v-if="isLoggedIn", @run="run", :image-progress="imageProgress",
-      :mask-progress="maskProgress", :uploading="uploading", :mask-id="maskId",
-      :image-id="imageId", @cancelImage="cancelImage", :demo-data="demoData", @loadItem="loadItem",
-      :jobs="jobs", @logout="logout")
+  utm(v-if="isLoggedIn", :demo-data="demoData", @logout="logout")
   auth-container(v-else,
       :description="description",
       title="Unbalanced Optimal Transport Morphometry",
@@ -26,7 +23,10 @@ export default {
   data() {
     return {
       description,
-      demoData: {},
+      demoData: {
+        folder: { name: '' },
+        paramsFile: { name: '' },
+      },
       jobs: [],
     };
   },

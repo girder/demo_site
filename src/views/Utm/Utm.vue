@@ -35,9 +35,11 @@ v-app
               p.subheading {{ launchDemoInstructions }}
             v-card-text
               p.subheading Folder:
-                b  {{ demoData.folder.name }}
+                v-chip
+                  b {{ demoData.folder.name }}
               p.subheading Param File:
-                b  {{ demoData.paramsFile.name }}
+                v-chip
+                  b {{ demoData.paramsFile.name }}
             v-card-actions
               v-btn(color="primary" large)
                 v-icon.pa-2 launch
@@ -48,32 +50,46 @@ v-app
               p.subheading {{ dataRequirements }}
               ul.subheading
                 li(v-for="row in variableFileDescription" :key="row") {{ row }}
-            v-dialog(v-model="uploader", v-if="modeToggle == 2", width="70%")
-              v-btn(slot="activator" color="primary" large)
-                v-icon.pa-2 cloud_upload
-                | Upload Data
-              v-card
-                girder-upload(
-                    :dest="location",
-                    :multiple="true")
+            v-card-text
+              p.subheading Folder:
+                v-chip
+                  b  {{ runData.folder.name || 'Not Found' }}
+              p.subheading Param File:
+                v-chip
+                  b  {{ runData.paramsFile.name || 'Not Found' }}
+
             v-card-actions(v-if="modeToggle === 1")
               v-btn(color="primary" large)
                 v-icon.pa-2 launch
                 | Run job
 
+            v-card-actions(v-if="modeToggle == 2")
+              v-btn(color="primary", large, @click="upload")
+                v-icon.pa-2 cloud_upload
+                | Upload Data
+
       v-flex(md7 sm12)
         v-card.ma-2
-          girder-data-browser(:location="location",
+          girder-data-browser(
+              v-if="modeToggle < 2",
+              ref="girderBrowser",
+              :location="location",
               @update:location="setLocation($event)",
               :select-enabled="false",
               :multi-select-enabled="false",
               :upload-enabled="false",
               :new-item-enabled="false",
               :new-folder-enabled="false")
+          girder-upload(
+              v-else,
+              :dest="uploadLocation",
+              @done="$refs.girderBrowser.refresh();",
+              :multiple="true")
 </template>
 
 <script>
 import { mapState } from 'vuex';
+import { formEncode } from '@/rest';
 import {
   DataBrowser as GirderDataBrowser,
   Upload as GirderUpload,
@@ -115,6 +131,7 @@ export default {
     return {
       uploader: false,
       browserLocation: null,
+      uploadLocation: null,
       demoLocation: null,
       modeToggle: 0,
       launchDemoInstructions,
@@ -129,8 +146,19 @@ export default {
   },
   methods: {
     setLocation(loc) {
-      if (this.modeToggle === 1) {
+      if ([1, 2].indexOf(this.modeToggle) !== -1) {
         this.browserLocation = loc;
+      }
+    },
+    async upload() {
+      if (!this.uploader) {
+        const { data } = await this.girderRest.post('folder', formEncode({
+          parentType: this.location.type,
+          parentId: this.location.id,
+          name: `UTM ${new Date().toISOString()}`,
+        }));
+        this.uploadLocation = data;
+        this.uploader = true;
       }
     },
   },
@@ -144,6 +172,35 @@ export default {
         }
         return loc;
       },
+    },
+    runData: {
+      default: { folder: {}, paramsFile: {} },
+      async get() {
+        const folder_id = this.modeToggle == 1 ? this.location.id : this.uploadLocation._id;
+        const folder_promise = this.girderRest.get(`folder/${folder_id}`);
+        const item_promise = this.girderRest.get(`item`, {
+          params: {
+            folderId: folder_id,
+            text: 'csv',
+            limit: 1,
+          }
+        });
+        try {
+          const resolves = await Promise.all([folder_promise, item_promise])
+          return {
+            folder: resolves[0].data,
+            paramsFile: resolves[1].data[0],
+          };
+        } catch (err) {
+          return {
+            folder: {},
+            paramsFile: {},
+          };
+        }
+      },
+      watch() {
+        return [ this.uploadLocation ];
+      }
     },
   },
 };
