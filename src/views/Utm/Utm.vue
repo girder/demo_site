@@ -10,16 +10,19 @@ v-app
               v-subheader.pl-0
                 h4.headline Choose one of the options below.
           v-card-text
-            v-btn-toggle(v-model="modeToggle", max, color="primary", mandatory)
+            v-btn-toggle(v-model="modeToggle", max=20, color="primary", mandatory)
               v-btn(flat)
                 v-icon.pa-2 restore_page
-                | Launch Demo Data
+                | Demo
               v-btn(flat)
                 v-icon.pa-2 folder
-                | Choose Folder
+                | Choose
               v-btn(flat)
                 v-icon.pa-2 cloud_upload
-                | Upload New Data
+                | Upload
+              v-btn(flat)
+                v-icon.pa-2 settings
+                | Jobs
       v-flex(md5 sm12)
         v-card.ma-2
           v-card-title.pb-0(primary-title)
@@ -57,33 +60,31 @@ v-app
               p.subheading Param File:
                 v-chip
                   b  {{ runData.paramsFile.name || 'Not Found' }}
-
-            v-card-actions(v-if="modeToggle === 1")
-              v-btn(color="primary" large)
-                v-icon.pa-2 launch
-                | Run job
-
-            v-card-actions(v-if="modeToggle == 2")
-              v-btn(color="primary", large, @click="upload")
+            v-card-actions
+              v-btn(v-if="modeToggle == 2", color="primary", large, @click="upload")
                 v-icon.pa-2 cloud_upload
                 | Upload Data
-
+              v-btn(color="primary" large, @click="run", :disabled="!canRun")
+                v-icon.pa-2 launch
+                | Run job
+              v-btn(color="primary", large, v-if="currentJob")
+                | Results
       v-flex(md7 sm12)
         v-card.ma-2
           girder-data-browser(
-              v-if="modeToggle < 2",
+              v-if="modeToggle < 2 && location",
               ref="girderBrowser",
               :location="location",
               @update:location="setLocation($event)",
               :select-enabled="false",
               :multi-select-enabled="false",
-              :upload-enabled="false",
+              :upload-enabled="modeToggle === 2",
               :new-item-enabled="false",
               :new-folder-enabled="false")
           girder-upload(
-              v-else,
+              v-else-if="uploadLocation",
               :dest="uploadLocation",
-              @done="$refs.girderBrowser.refresh();",
+              @done="refresh++;",
               :multiple="true")
 </template>
 
@@ -134,6 +135,7 @@ export default {
       uploadLocation: null,
       demoLocation: null,
       modeToggle: 0,
+      refresh: 0,
       launchDemoInstructions,
       chooseDirectoryInstructions,
       uploadDataInstructions,
@@ -143,6 +145,10 @@ export default {
   },
   computed: {
     ...mapState('auth', ['user']),
+    canRun() {
+      const { folder, paramsFile } = this.runData;
+      return !!folder._id && !!paramsFile._id 
+    }
   },
   methods: {
     setLocation(loc) {
@@ -153,43 +159,90 @@ export default {
     async upload() {
       if (!this.uploader) {
         const { data } = await this.girderRest.post('folder', formEncode({
-          parentType: this.location.type,
-          parentId: this.location.id,
-          name: `UTM ${new Date().toISOString()}`,
+          parentType: this.location._modelType,
+          parentId: this.location._id,
+          name: `UTM_${new Date().toISOString()}`,
         }));
         this.uploadLocation = data;
         this.uploader = true;
       }
     },
+    async run() {
+      const { folder, paramsFile } = this.runData;
+      if (!folder._id || !paramsFile._id) {
+        console.error('Insufficient data to run.');
+      }
+      try {
+        const { data: files } = await this.girderRest.get(`item/${paramsFile._id}/files`);
+        if (files.length === 0 || files.length > 1) {
+          console.error(`ParamsFile ${paramsFile.name} should have exactly 1 data file.`);
+        }
+        const { data: folderCreated } = await this.girderRest.post('folder', formEncode({
+          parentId: folder._id,
+          name: 'output',
+          description: 'Output of UTM run.',
+          reuseExisting: true,
+        }));
+        const { data: resp } = await this.girderRest.post('utm', formEncode({
+          folderId: folder._id,
+          paramsId: files[0]._id,
+          outputFolderId: folderCreated._id,
+        })); 
+        console.log(resp);
+      } catch (err) {
+        console.error(err);
+      }
+    },
   },
   asyncComputed: {
     location: {
+      default() { return { _modelType: 'user', _id: this.user._id }; },
       async get() {
-        let loc = this.browserLocation || { type: 'user', id: this.user._id };
-        if (this.modeToggle === 0 || !loc) {
+        let loc = this.browserLocation || { _modelType: 'user', _id: this.user._id };
+        if (this.modeToggle === 0) {
           const { folder } = this.demoData;
-          loc = { type: 'folder', id: folder._id };
+          console.log(folder._id);
+          loc = { _modelType: 'folder', _id: folder._id };
         }
         return loc;
       },
     },
+    jobs: {
+      default: [],
+      async get() {
+        const { data } = this.girderRest.get('job', formEncode({
+          userId: this.user._id,
+          types: JSON.stringify(["celery"]),
+        }));
+        return data;
+      }
+    },
+    currentJob() {
+      return this.jobs[0];
+    },
     runData: {
       default: { folder: {}, paramsFile: {} },
       async get() {
-        const folder_id = this.modeToggle == 1 ? this.location.id : this.uploadLocation._id;
-        const folder_promise = this.girderRest.get(`folder/${folder_id}`);
-        const item_promise = this.girderRest.get(`item`, {
+        if (this.location._modelType !== 'folder'
+            || this.modeToggle === 0
+            || (this.modeToggle === 2 && !this.uploadLocation)) {
+          return { folder: {}, paramsFile: {} };
+        }
+        const folderId = this.modeToggle === 1 ? this.location._id : this.uploadLocation._id;
+        const folderPromise = this.girderRest.get(`folder/${folderId}`);
+        const itemPromise = this.girderRest.get('item', {
           params: {
-            folderId: folder_id,
+            folderId,
             text: 'csv',
             limit: 1,
-          }
+          },
         });
         try {
-          const resolves = await Promise.all([folder_promise, item_promise])
+          const resolves = await Promise.all([folderPromise, itemPromise]);
+          const paramsFileList = resolves[1].data;
           return {
             folder: resolves[0].data,
-            paramsFile: resolves[1].data[0],
+            paramsFile: paramsFileList.length ? paramsFileList[0] : {},
           };
         } catch (err) {
           return {
@@ -199,8 +252,11 @@ export default {
         }
       },
       watch() {
-        return [ this.uploadLocation ];
-      }
+        return [
+          this.refresh,
+          this.uploadLocation,
+        ];
+      },
     },
   },
 };

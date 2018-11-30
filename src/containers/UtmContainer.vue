@@ -1,6 +1,6 @@
 <template lang="pug">
 div
-  utm(v-if="isLoggedIn", :demo-data="demoData", @logout="logout")
+  utm(v-if="isLoggedIn", :demo-data="demoData")
   auth-container(v-else,
       :description="description",
       title="Unbalanced Optimal Transport Morphometry",
@@ -20,6 +20,7 @@ and have our system generate a web view that does some fancy things you'll proba
 export default {
   components: { AuthContainer, Utm },
   mixins: [fetchingContainer],
+  inject: ['girderRest'],
   data() {
     return {
       description,
@@ -31,11 +32,15 @@ export default {
     };
   },
   computed: {
-    ...mapState('auth', ['user']),
+    ...mapState('auth', ['token']),
     ...mapGetters('auth', ['isLoggedIn']),
   },
+  watch: {
+    token(newVal) {
+      this.girderRest.token = newVal;
+    },
+  },
   methods: {
-    ...mapActions('auth', ['logout']),
     async fetch() {
       if (this.isLoggedIn) {
         this.demoData = (await rest.get('utm/demo')).data;

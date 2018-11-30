@@ -8,7 +8,6 @@ v-app
       v-flex.pa-2(xs-12, md6, lg8)
         .headline {{ title }}
         .body-1.mt-3 {{ description }}
-
         .title.mt-5 Examples
         hr.mb-3.mt-1
         v-flex.text-xs-center(v-if="loadingExamples")
