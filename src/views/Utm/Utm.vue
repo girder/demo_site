@@ -10,21 +10,21 @@ v-app
               v-subheader.pl-0
                 h4.headline Choose one of the options below.
           v-card-text
-            v-btn-toggle(v-model="modeToggle", max=20, color="primary", mandatory)
-              v-btn(flat)
+            v-tabs(v-model="modeToggle")
+              v-tab(key="demo")
                 v-icon.pa-2 restore_page
                 | Demo
-              v-btn(flat)
+              v-tab(key="choose")
                 v-icon.pa-2 folder
                 | Choose
-              v-btn(flat)
+              v-tab(key="upload")
                 v-icon.pa-2 cloud_upload
                 | Upload
-              v-btn(flat)
+              v-tab(key="jobs")
                 v-icon.pa-2 settings
                 | Jobs
       v-flex(md5 sm12)
-        v-card.ma-2
+        v-card.ma-2(v-if="modeToggle < 3")
           v-card-title.pb-0(primary-title)
             div
               h2.display-1 Instructions
@@ -33,7 +33,7 @@ v-app
                 p.subheading(v-if="modeToggle == 1") {{ chooseDirectoryInstructions }}
                 p.subheading(v-if="modeToggle == 2") {{ uploadDataInstructions }}
 
-          div(v-if="modeToggle == 0")
+          div(v-if="modeToggle === 0")
             v-card-text
               p.subheading {{ launchDemoInstructions }}
             v-card-text
@@ -44,11 +44,11 @@ v-app
                 v-chip
                   b {{ demoData.paramsFile.name }}
             v-card-actions
-              v-btn(color="primary" large)
+              v-btn(color="primary")
                 v-icon.pa-2 launch
                 | Launch
 
-          div(v-if="modeToggle !== 0")
+          div(v-else)
             v-card-text
               p.subheading {{ dataRequirements }}
               ul.subheading
@@ -61,35 +61,44 @@ v-app
                 v-chip
                   b  {{ runData.paramsFile.name || 'Not Found' }}
             v-card-actions
-              v-btn(v-if="modeToggle == 2", color="primary", large, @click="upload")
-                v-icon.pa-2 cloud_upload
-                | Upload Data
-              v-btn(color="primary" large, @click="run", :disabled="!canRun")
+              v-btn(color="primary", @click="run", :disabled="!canRun")
+                v-icon.pa-2 play_arrow
+                | Run Job
+              v-btn(color="primary", v-if="currentJob && !processing")
                 v-icon.pa-2 launch
-                | Run job
-              v-btn(color="primary", large, v-if="currentJob")
-                | Results
+                | View Results
+              .jobStatus(v-if="currentJob")
+                v-progress-circular.ml-3(
+                    v-if="processing",
+                    indeterminate,
+                    :size="30",
+                    :width="3",
+                    :rotate="-90")
+              p.subheading.px-3(v-if="currentJob") {{ statusText || " " }}
+      
       v-flex(md7 sm12)
         v-card.ma-2
           girder-data-browser(
-              v-if="modeToggle < 2 && location",
+              v-if="modeToggle < 2 && !!location",
               ref="girderBrowser",
               :location="location",
-              @update:location="setLocation($event)",
+              @update:location="setBrowserLocation($event)",
               :select-enabled="false",
               :multi-select-enabled="false",
               :upload-enabled="modeToggle === 2",
               :new-item-enabled="false",
               :new-folder-enabled="false")
           girder-upload(
-              v-else-if="uploadLocation",
+              v-else-if="modeToggle === 2 && uploadLocation",
               :dest="uploadLocation",
               @done="refresh++;",
-              :multiple="true")
+              :multiple="true",
+              :preUpload="preUpload")
 </template>
 
 <script>
 import { mapState } from 'vuex';
+import { JobStatus } from '@/constants';
 import { formEncode } from '@/rest';
 import {
   DataBrowser as GirderDataBrowser,
@@ -116,6 +125,20 @@ const variableFileDescription = [
   '"addative", ',
 ];
 
+const statusEnum = [
+  'inactive',
+  'queued',
+  'running',
+  'success',
+  'error',
+  'cancelled',
+];
+
+const busyStatusEnum = [
+  'queued',
+  'running',
+];
+
 export default {
   components: {
     GirderDataBrowser,
@@ -132,40 +155,68 @@ export default {
     return {
       uploader: false,
       browserLocation: null,
-      uploadLocation: null,
+      uploadLocation: { name: `UTM_${new Date().toISOString()}` },
       demoLocation: null,
       modeToggle: 0,
       refresh: 0,
+      jobs: [],
+      activeJob: null, // the job returned by /utm/job
       launchDemoInstructions,
       chooseDirectoryInstructions,
       uploadDataInstructions,
       dataRequirements,
       variableFileDescription,
+      interval: null,
     };
   },
   computed: {
     ...mapState('auth', ['user']),
+    processing() {
+      return this.currentJob
+        && ![JobStatus.ERROR, JobStatus.SUCCESS, JobStatus.CANCELED].includes(this.currentJob.status);
+    },
     canRun() {
       const { folder, paramsFile } = this.runData;
-      return !!folder._id && !!paramsFile._id 
-    }
+      return !!folder._id && !!paramsFile._id && !this.processing;
+    },
+    statusText() {
+      const job = this.activeJob || {};
+      if (!job) {
+        return 'Job not found';
+      }
+      switch (job.status) {
+        case JobStatus.INACTIVE:
+        case JobStatus.QUEUED:
+          return 'Your job is waiting in the job queue.';
+        case JobStatus.RUNNING:
+          if (job.progress && job.progress.message) {
+            return job.progress.message;
+          }
+          return 'Your job is being processed, please wait...';
+        case JobStatus.ERROR:
+          return 'An error occurred while processing your job.';
+        case JobStatus.SUCCESS:
+          return 'Job succeeded';
+        default:
+          return 'Unknown job status';
+      }
+    },
   },
   methods: {
-    setLocation(loc) {
-      if ([1, 2].indexOf(this.modeToggle) !== -1) {
+    setBrowserLocation(loc) {
+      if (this.modeToggle === 1) {
         this.browserLocation = loc;
       }
     },
-    async upload() {
-      if (!this.uploader) {
-        const { data } = await this.girderRest.post('folder', formEncode({
-          parentType: this.location._modelType,
-          parentId: this.location._id,
-          name: `UTM_${new Date().toISOString()}`,
-        }));
-        this.uploadLocation = data;
-        this.uploader = true;
-      }
+    async preUpload() {
+      // Lazily create the upload destination folder.
+      const parent = { _modelType: 'user', _id: this.user._id };
+      const { data } = await this.girderRest.post('folder', formEncode({
+        parentType: parent._modelType,
+        parentId: parent._id,
+        name: `UTM_${new Date().toISOString()}`,
+      }));
+      this.uploadLocation = data;
     },
     async run() {
       const { folder, paramsFile } = this.runData;
@@ -187,8 +238,8 @@ export default {
           folderId: folder._id,
           paramsId: files[0]._id,
           outputFolderId: folderCreated._id,
-        })); 
-        console.log(resp);
+        }));
+        this.refresh++;
       } catch (err) {
         console.error(err);
       }
@@ -198,33 +249,46 @@ export default {
     location: {
       default() { return { _modelType: 'user', _id: this.user._id }; },
       async get() {
-        let loc = this.browserLocation || { _modelType: 'user', _id: this.user._id };
-        if (this.modeToggle === 0) {
-          const { folder } = this.demoData;
-          console.log(folder._id);
-          loc = { _modelType: 'folder', _id: folder._id };
+        switch(this.modeToggle) {
+          case 0:
+            const { folder } = this.demoData;
+            return { _modelType: 'folder', _id: folder._id };
+          case 1:
+            return this.browserLocation || { _modelType: 'user', _id: this.user._id };
+          case 2:
+            return this.uploadLocation;
+          default:
+            return null;
         }
-        return loc;
       },
     },
     jobs: {
       default: [],
       async get() {
-        const { data } = this.girderRest.get('job', formEncode({
-          userId: this.user._id,
-          types: JSON.stringify(["celery"]),
-        }));
-        return data;
-      }
+        const { data } = await this.girderRest.get('utm/job', { params: { limit: 100 } });
+        this.jobs = data;
+        return this.jobs;
+      },
+      watch() {return [this.refresh];},
     },
-    currentJob() {
-      return this.jobs[0];
+    currentJob: {
+      get() {
+        const currents = this.jobs.filter(j =>
+          (j.utmFolderId === this.location._id) ||
+          (j.utmOutputFolderId === this.location._id))
+        const newActiveJob = currents.length ? currents[0] : null;
+        if (!newActiveJob || !this.activeJob ||
+          (this.activeJob && newActiveJob._id !== this.activeJob._id)) {
+          this.activeJob = newActiveJob;
+        }
+        return this.activeJob;
+      },
     },
     runData: {
       default: { folder: {}, paramsFile: {} },
       async get() {
-        if (this.location._modelType !== 'folder'
-            || this.modeToggle === 0
+        if ((this.modeToggle === 1 && this.location._modelType !== 'folder')
+            || (this.modeToggle === 0)
             || (this.modeToggle === 2 && !this.uploadLocation)) {
           return { folder: {}, paramsFile: {} };
         }
@@ -245,19 +309,22 @@ export default {
             paramsFile: paramsFileList.length ? paramsFileList[0] : {},
           };
         } catch (err) {
-          return {
-            folder: {},
-            paramsFile: {},
-          };
+          return { folder: {}, paramsFile: {} };
         }
       },
-      watch() {
-        return [
-          this.refresh,
-          this.uploadLocation,
-        ];
-      },
+      watch() {return [this.refresh];},
     },
+  },
+  destroyed() {
+    clearInterval(this.interval);
+  },
+  mounted() {
+    this.interval = setInterval(async () => {
+      if (this.activeJob && ![JobStatus.ERROR, JobStatus.SUCCESS, JobStatus.CANCELED].includes(this.activeJob.status)) {
+        const { data } = await this.girderRest.get(`job/${this.activeJob._id}`);
+        this.activeJob = Object.assign(this.activeJob, data);
+      }
+    }, 3000);
   },
 };
 </script>
