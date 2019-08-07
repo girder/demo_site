@@ -22,7 +22,7 @@ from girder_jobs.models.job import Job
 from girder_thumbnails.worker import createThumbnail
 from girder.utility import setting_utilities
 from girder.utility.mail_utils import (
-    addTemplateDirectory, getEmailUrlPrefix, renderTemplate, sendEmail)
+    addTemplateDirectory, getEmailUrlPrefix, renderTemplate, sendMail)
 from girder.utility.progress import setResponseTimeLimit
 from girder.utility.server import staticFile
 from girder_worker.docker.tasks import docker_run
@@ -276,7 +276,7 @@ class Photomorph(Resource):
                         'url': getEmailUrlPrefix() + '#timelapse',
                         'deletionDate': (folder['created'] + dataExp).strftime(DATE_FMT)
                     })
-                    sendEmail(to=user['email'], subject=DELETE_SUBJECT, text=text)
+                    sendMail(DELETE_SUBJECT, text, [user['email']])
                     Folder().update({'_id': folder['_id']}, {
                         '$set': {'timelapseEmailSent': True}
                     }, multi=False)
